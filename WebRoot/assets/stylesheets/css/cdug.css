@@ -1,0 +1,671 @@
+body {
+  font-family: 'Microsoft YaHei','微软雅黑', Helvetica, Sans-serif;
+  padding-bottom: 40px;
+};
+
+* {
+  margin: 0;
+  padding: 0;
+}
+    /* CUSTOMIZE THE CAROUSEL
+    -------------------------------------------------- */
+
+    /* Carousel base class */
+.carousel {
+  margin-bottom: 60px;
+}
+
+.carousel .container {
+  position: relative;
+  z-index: 9;
+}
+
+.carousel-control {
+  height: 80px;
+  margin-top: 0;
+  font-size: 120px;
+  text-shadow: 0 1px 1px rgba(0,0,0,.4);
+  background-color: transparent;
+  border: 0;
+  z-index: 10;
+}
+
+.carousel .item {
+  height: 500px;
+}
+.carousel img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 100%;
+  height: 500px;
+}
+
+.carousel-caption {
+  background-color: transparent;
+  position: static;
+  max-width: 550px;
+  padding: 0 20px;
+  margin-top: 200px;
+}
+.carousel-caption h1,
+  .carousel-caption .lead {
+    margin: 0;
+    line-height: 1.25;
+    color: #fff;
+    text-shadow: 0 1px 1px rgba(0,0,0,.4);
+}
+.carousel-caption .btn {
+  margin-top: 10px;
+}
+
+
+
+/* CDUG Expert 
+-------------------------------------------------- */
+
+.expert-wrapper {
+  box-shadow: -5px 0 12px -5px gray, 
+              5px 0 12px -5px gray;
+  padding-top: 10px;
+  margin-left: -10px;
+  background: url(../../img/expert_back.jpg) no-repeat;
+  color: #5a5a5a;
+  overflow: hidden;
+}
+
+.expert-wrapper h1 {
+  text-align: center;
+  color: #fff;
+  font-size: 24px;
+}
+
+.expert-wrapper .byline {
+  text-align: center;
+  color: #ccc;
+  font-size: 16px;
+}
+
+.s-expert {
+  float: left;
+  margin: 30px 0 0 35px;
+  background: rgba(0,0,0,0.4);
+}
+
+.expert-list {
+  height: 220px;
+  width: 420px;
+  overflow: hidden;
+  display: block;
+  color: #D8DAE1;
+}
+
+.expert-list li {
+  font-size: 12px;
+  margin: 0 10px 0 10px;
+  overflow: hidden;
+  display: block;
+}
+
+.expert-list li h4 {
+  margin-top: 30px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: normal;
+  display: block;
+}
+
+.expert-list li h4 a {
+  color: #FFCB00;
+}
+
+.expert-list img {
+  margin: 30px 10px 0 10px;
+  padding: 5px;
+  border: 1px solid gray;
+}
+
+.expert-list strong {
+  font-size: 14px;
+  margin-bottom: 
+}
+
+.expert-list .expert-profile {
+  height: 95px;
+  overflow: hidden;
+}
+
+.expert-list .expert-konwmore {
+  float: right;
+  margin: 15px 5px 0 0;
+}
+
+.expert-pagination {
+  margin: 50px auto;
+  text-align: center;
+}
+
+
+
+/* Featurettes
+------------------------- */
+
+.featurette-divider {
+  margin: 80px 0; /* Space out the Bootstrap
+<hr>
+more */
+}
+.featurette {
+  padding-top: 120px; /* Vertically center images part 1: add padding above and below text. */
+  overflow: hidden; /* Vertically center images part 2: clear their floats. */
+}
+.featurette-image {
+  margin-top: -120px; /* Vertically center images part 3: negative margin up the image the same amount of the padding to center it. */
+}
+
+    /* Give some space on the sides of the floated elements so text doesn't run right into it. */
+.featurette-image.pull-left {
+  margin-right: 40px;
+}
+.featurette-image.pull-right {
+  margin-left: 40px;
+}
+
+    /* Thin out the expert-wrapper headings */
+.featurette-heading {
+  font-size: 50px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+/*  CDUG INDEX CSS 
+    -------------------------------------------------- */
+.grid-990 {
+  width: 72.5%;
+  margin: 0 auto;
+}
+.topbar {
+  width: 100%;
+  height: 26px;
+  border-bottom: 1px solid #dcdcdc;
+  color: #666;
+}
+
+.topbar p {
+  line-height: 14px;
+}
+
+.topbar a {
+  color: #666;
+}
+
+.topbar .topbar-wrapper {
+  padding: 6px 0;
+}
+
+.topbar .topbar-wrapper .topbar-title {
+  width: 300px;
+  float: left;
+}
+
+.topbar .topbar-menu {
+  float: right;
+  position: relative;
+  z-index: 1000;
+}
+
+.topbar .topbar-menu li {
+  line-height: 14px;
+}
+
+.index-header {
+  width: 100%;
+  height: 80px;
+  background-color: #fff;
+}
+
+.index-header .logo-wrapper {
+  padding: 5px 0;
+  width: 320px;
+}
+
+.index-header .ui-logo {
+  width: 290px;
+  height: 60px;
+  margin: 0;
+  padding: 0;
+  display: block;
+  background-image: url(../../img/sse_logo_mini.png);
+}
+
+.index-header .iheader-wrapper {
+  height: 60px;
+  padding-top: 18px;
+}
+
+.index-header .index-nav {
+  float: right;
+  position: relative;
+  z-index: 1000;
+}
+
+.index-header .index-nav .nav-item {
+  display: block;
+  float: left;
+  width: 90px;
+  height: 45px;
+}
+
+.index-header .index-nav .nav-item a {
+  display: block;
+  float: right;
+  color: #67615B;
+  line-height: 25px;
+  padding: 9px 0;
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.nav-item #index {
+  color: #c3522f;
+}
+
+.index-header .index-nav .nav-item a:hover {
+  color: #c3522f;
+  text-decoration: none;
+}
+
+
+.footer {
+  overflow: hidden;
+  clear: both;
+  width: 100%;
+  margin: 0 auto;
+  font-size: 0.9166666666666667em;
+  color: #aaa;
+  background-color: #ededed;
+  overflow: hidden;
+  position: relative;
+}
+
+  .footer a {
+    color: #aaa;
+  }
+
+  .footer .footer-headline {
+    height: 20px;
+    background-repeat: repeat-x;
+    background-image: url(../../img/footer-headline.png);
+  }
+
+  .footer #footer-bg {
+  background: url(images/footer-bg.png) repeat left top;
+  width: 960px;
+  margin: 0 auto;
+  }
+
+  .footer #footer-inner {
+  max-width: 940px;
+  margin-left: 170px; 
+  padding-bottom: 20px;
+  overflow: hidden;
+  position: relative;
+  }
+
+    .footer #footer-inner .first {
+    padding-left: 0;
+    }
+
+    .footer #footer-inner .inner-block {
+    width: 22%;
+    min-height: 150px;
+    padding: 0 2%;
+    float: left;
+    background: url(images/footer-line.png) repeat-y right top;
+    position: relative;
+    }
+
+    .footer #footer-inner .inner-block .inner-con {
+    font-size: 12px;
+    line-height: 1.68;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: #8a8a8a;
+    }
+
+    .footer #footer-inner .inner-block ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    }
+
+
+/* CDUG OTHER PAGES CSS
+--------------------------------------------------*/
+
+#head {
+  margin: 5px 0 3px;
+}
+
+#h-logo {
+  float: left;
+  margin: 10px 0 5px;
+}
+
+#h-logo a {
+  display: block;
+  text-indent: -9999em;
+  background: url(../../img/sse_logo_mmini.png) no-repeat 0 0;
+  outline: none;
+  width: 205px;
+  height: 42px;
+}
+
+#h-meta {
+  float: right;
+  color: #bbb;
+}
+
+#h-meta a {
+  color: #545544;
+}
+
+.navbar .container {
+  width: 940px;
+}
+
+.cdug-header {
+
+}
+
+/* RESPONSIVE CSS
+-------------------------------------------------- */
+
+@media (max-width: 979px) {
+
+  .container.navbar-wrapper {
+    margin-bottom: 0;
+    width: auto;
+  }
+  .navbar-inner {
+    border-radius: 0;
+    margin: -20px 0;
+  }
+
+  .carousel .item {
+    height: 500px;
+  }
+  .carousel img {
+    width: auto;
+    height: 500px;
+  }
+
+  .featurette {
+    height: auto;
+    padding: 0;
+  }
+  .featurette-image.pull-left,
+    .featurette-image.pull-right {
+      display: block;
+      float: none;
+      max-width: 40%;
+      margin: 0 auto 20px;
+    }
+}
+
+
+@media (max-width: 767px) {
+
+  .navbar-inner {
+    margin: -20px;
+  }
+
+  .carousel {
+    margin-left: -20px;
+    margin-right: -20px;
+  }
+  .carousel .container {
+
+  }
+  .carousel .item {
+    height: 300px;
+  }
+  .carousel img {
+    height: 300px;
+  }
+  .carousel-caption {
+    width: 65%;
+    padding: 0 70px;
+    margin-top: 100px;
+  }
+  .carousel-caption h1 {
+    font-size: 30px;
+  }
+  .carousel-caption .lead,
+    .carousel-caption .btn {
+      font-size: 18px;
+  }
+
+  .expert-wrapper .span4 + .span4 {
+    margin-top: 40px;
+  }
+
+  .featurette-heading {
+    font-size: 30px;
+  }
+  .featurette .lead {
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+}
+
+.my-modal {
+  width: 400px;
+}
+
+.content-font {
+  font-family: Verdana;
+}
+
+.hero-unit {
+  font-size: 14px;
+  line-height: 20px;
+  padding: 30px;
+}
+
+.hero-unit ul li {
+  list-style: none;
+}
+
+.news-list-title {
+  height: 35px;
+  line-height: 26px;
+  padding: 10px 0 0 10px;
+  border-bottom: 4px solid #0B2C8D;
+}
+
+.news-list-title h4 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.news-wrapper {
+  /*border-right: 2px solid #ccc;*/
+  margin-left: 10px;
+  padding: 0 20px 0 0px;
+  box-shadow: -5px 0 12px -5px gray, 
+              5px 0 12px -5px gray;
+}
+
+.news-pagination {
+  float: right;
+  padding: 0px 20px 0 0;
+}
+
+.news-control {
+  padding: 30px 0 0 50px;
+}
+
+.news-control select {
+  margin-top: 20px;
+  width: 245px;
+}
+
+.news-list {
+  margin: 10px 0px 0 10px;
+  height: 135px;
+  display: block;
+  overflow: hidden;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #c5ceea;
+}
+
+.news-list li {
+  display: block;
+  font-size: 12px;
+  margin-right: 10px;
+  color: #666;
+}
+
+.news-list li h4 {
+  font-size: 15px;
+  color: #0066b3;
+  margin:0 0 8px 0;
+  line-height: 16px;
+}
+
+.news-list li strong {
+  font-size: 13px;
+  color: #ff4e00;
+  margin-bottom: 10px;
+}
+
+.news-list img {
+  padding: 2px;
+  border: 1px solid #ccc;
+}
+
+.news-block {
+  height: 260px;
+  margin-top: 40px;
+  margin-left: 45px;
+}
+
+.news-item p {
+  color: #767676;
+  font-size: 12px;
+  line-height: default;
+}
+
+.news-item a {
+  color: black;
+  font-size: 12px;
+} 
+
+.content-wrapper {
+  background-repeat: no-repeat;
+}
+
+.resource-wrapper {
+  box-shadow: -5px 0px 12px -6px gray, 
+              5px 0px 12px -6px gray;
+  padding-top: 10px;
+  margin-left: -10px;
+  min-height: 700px;
+  overflow: hidden;
+}
+
+.resource-wrapper .r-byline {
+  margin: 26px 0 0 10px;
+  padding: 0 0 0 10px;
+  color: #aaa;
+  font-size: 12px;
+  display: block;
+}
+
+.resource-wrapper h1 {
+  padding: 0 10px 0 10px;
+  font-size: 24px;
+  display: block;
+  float: left;
+}
+
+.resource-wrapper #r-title {
+  margin: 0;
+  border-bottom: 4px solid #0B2C8D;
+}
+
+.resource-wrapper .r-tab {
+  padding: 15px 0 0 10px;
+}
+
+.r-tab .nav {
+  margin-bottom: 10px;
+}
+
+.resource-wrapper #rcategory-title {
+  border-top: 1px solid #0772A1;
+  border-left: 1px solid #0772A1;
+  box-shadow: 3px 3px 5px #0772A1;
+  text-align: center;
+  padding: 8px 0 8px 0;
+  margin: 10px;
+}
+
+.resource-table table {
+  margin: 10px 20px 10px 10px;
+  overflow: hidden;
+}
+
+.signup-block {
+  margin-left: 140px;
+  overflow: auto;
+}
+
+.signup-block
+.well {
+  margin-left: 10px;
+}
+
+.signup-block strong {
+  margin-left: 30px;
+}
+
+.signup-block
+.btn-controls {
+  display: block;
+  margin-left: 10px;
+  margin-bottom: 5px;
+}
+
+.expertinfo-block {
+  background-color: white;
+  margin-left: 140px;
+  padding: 15px 50px 15px 50px;
+  min-height: 500px;
+}
+
+.expertinfo-block
+.expert-profile {
+  margin-left: 0px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #aaa;
+}
+
+.expertinfo-block
+.expert-intro {
+  margin-left: 0px;
+  padding-top: 15px;
+  margin: 0 100px 0 100px;
+}
+
+/*CDUG Conference Begin*/
+h2.ibm-rule, h3.ibm-rule, ul.ibm-rule, ol.ibm-rule {
+border-top: 2px solid #666;
+padding-top: 6px;
+margin-top: 10px !important;
+}
+
+/*CDUG Conference End*/

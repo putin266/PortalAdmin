@@ -1,0 +1,65 @@
+/*teacher*/
+.tea_brief{
+border:1px solid #d9e2e6;
+font-size:14px;
+font-family:Microsoft YaHei,SimHei;
+background:url(../image/blue_bg.png) repeat-x white;
+padding:10px;
+color:#2f3033;
+overflow:hidden}
+.tea_brief img{
+padding:8px;
+background-color:white}
+.divider{
+width:1px;
+height:117px;
+margin:0 25px;
+background:url(../image/divider.png) no-repeat}
+.tea_brief .right{
+margin-left:40px}
+.tea_brief .name{
+margin:10px 0;
+overflow:visible}
+.tea_brief .name .contace .academic{
+width:100%;
+float:left}
+.tea_brief .name span{
+display:block;
+width:auto;
+float:left;
+padding-right:10px}
+.tea_brief .name .ch{
+color:#0072ff;
+font-weight:bold;
+font-size:28px;
+letter-spacing:3px}
+.tea_brief .name .eng{
+color:#595959;
+font-weight:bold;
+top:16px;
+font-size:16px}
+.tea_brief .name .post{
+color:#797979;
+font-weight:bold;
+top:14px;
+font-size:16px}
+.tea_brief .contact{
+top:14px;
+font-size:12px;
+position:relative;
+}
+.tea_brief .academic{
+margin:15px 0}
+.tea_brief .academic div{
+top:28px;
+float:left}
+.tea_brief .academic .title{
+font-size:16px;
+font-weight:bold;
+display:block;
+width:auto;
+margin-bottom:5px}
+.tea_brief .academic ul{
+width:200px;
+line-height:25px;
+list-style:none}

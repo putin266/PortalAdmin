@@ -1,0 +1,146 @@
+@charset 'utf-8';
+
+/*GLOBAL*/
+
+#wrap_main {
+	position:relative;
+	/*overflow:hidden;*/
+	width:100%;
+	background:url(../../img/t_bodybg.gif) repeat-x 0 0;
+	z-index:5;
+}
+#wrap {
+	position:relative;
+	overflow:hidden;
+	width:100%;
+	background:url('../assets/stylesheets/image/t_bodybg.gif') repeat-x 0 0;
+	z-index:5;
+}
+#head {
+	position:relative;
+	width:960px;
+	height:95px;
+	margin:0 auto;
+	background:none;
+	z-index:999;
+}
+#container {
+	position:relative;
+	width:960px;
+	margin:0 auto 0;
+	z-index:5;
+	background:url('../images/common/bg_container.gif') repeat-y 192px 0;
+	padding:35px 0 70px 0;
+}
+#container:after {
+	content:"";
+	clear:both;
+	display:block;
+	width:0;
+	height:0;
+	font-size:0;
+	line-height:0;
+}
+#lnb {
+	float:left;
+	width:190px;
+}
+#contents {
+	float:left;
+	width:740px;
+	margin-left:30px;
+}
+
+/* footer */
+#footer {
+	width:100%;
+	height:72px;
+	margin:0 auto;
+	border-top:1px solid #5479AE;
+}
+	#footer div.cen {
+		position:relative;
+		width:960px;
+		margin:0 auto;
+		z-index:6;
+	}
+.link-address {
+	padding-top:20px;
+	overflow:hidden;
+	font-size:0;
+	line-height:0;
+}
+	.link-address ul {
+		width:100%;
+		overflow:hidden;
+	}
+		.link-address ul li {
+			float:left;
+			margin-left:5px;
+			padding-left:10px;
+			background:url('../images/common/icon/bl_footer_dot.gif') no-repeat 0 4px;
+		}
+		.link-address ul li.first {
+			margin:0;
+			padding:0;
+			background:none;
+		}
+	.link-address address {
+		margin-top:5px;
+	}
+.area-footer-menu {
+	top:15px;
+	right:0;
+	margin-left:-60px;
+}
+
+.footer-menu {
+	display:inline;
+	float:left;
+	position:relative;
+	/* width:133px; */
+	height:18px;
+	margin-left:5px;
+	/* border:1px solid #bac3cd; */
+	/* background:#FFF url('../images/common/bg_footer_menu.gif') no-repeat 0 bottom; */
+}
+.footer-menu select {padding:10; height:auto;}
+	.footer-menu strong {
+		display:block;
+		height:14px;
+		padding:4px 0 0 7px;
+		color:#898989;
+		font-weight:normal;
+		font-size:11px;
+		line-height:13px;
+		cursor:pointer;
+	}
+	.footer-menu .link {
+		left:-1px;
+		bottom:17px;
+		width:133px;
+		padding:3px 0;
+		border:1px solid #bac3cd;
+		background:#fff;
+		font-size:11px;
+		line-height:16px;
+	}
+		.footer-menu .link em {
+			display:block;
+			padding:4px 0 0 17px;
+			background:url('../images/common/icon/bl_footer_plus.gif') no-repeat 10px 8px;
+		}
+			.footer-menu .link em a {
+				color:#4070bd;
+			}
+			.footer-menu .link ul li {
+				padding-left:10px;
+			}
+			.footer-menu .link ul a {
+				color:#676767;
+			}
+			.footer-menu .link ul a:hover {
+				color:#000;
+			}
+
+.footgo {display:inline; float:left; position:relative; width:29px; height:18px; margin-top:0; margin-left:2px;}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="edu.tongji.sse.ibm.pojo">
+	<class name="ClubInfo" lazy="false">
+		<id name="id" type="java.lang.Integer">
+			<column name="id"></column>
+			<generator class="native"></generator>
+		</id>
+	
+		<property name="content" type="java.lang.String">
+			<column name="content" sql-type="TEXT"></column>
+		</property>
+
+		<many-to-one name="slider" cascade="all" class="Slider" column="slider_id" unique="true"></many-to-one>
+	</class>
+</hibernate-mapping>

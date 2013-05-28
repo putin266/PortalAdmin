@@ -1,0 +1,73 @@
+.login-form {
+	width: 400px;
+	height: 200px;
+	margin: 200px 0px 0px 300px;
+	background-color: #767676;
+}
+
+.admin-header {
+	height: 130px;
+	background-color: #4b5ed7;
+}
+
+.admin-header h1 {
+	margin-left: 40px;
+	padding-top: 40px;
+	color: white;
+}
+
+.save-redo-form {
+	margin-top: 20px;
+	float: right;
+}
+
+.span12 {
+	width: 1000px;
+	min-height: 450px;
+	overflow: auto;
+}
+
+.list {
+	margin-left: 100px;
+	width: 600px;
+}
+
+.item {
+	min-height: 30px;
+	padding-top: 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+.item a {
+	color: black;
+	font-size: 16px;
+}
+
+#components{
+    min-height: 600px;
+}
+#target{
+    min-height: 200px;
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+#target .component{
+    border: 1px solid #fff;
+}
+#temp{
+    width: 500px;
+    background: white;
+    border: 1px dotted #ccc;
+    border-radius: 10px;
+}
+
+.popover-content form {
+    margin: 0 auto;
+    width: 213px;
+}
+.popover-content form .btn{
+    margin-right: 10px
+}
+#source{
+    min-height: 500px;
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="edu.tongji.sse.ibm.pojo">
+	<class name="CDUG_signUpForm" lazy="false">
+		<id name="id" type="java.lang.Integer">
+			<column name="id"></column>
+			<generator class="native"></generator>
+		</id>
+		<property name="name" type="java.lang.String">
+			<column name="name"></column>
+		</property>
+		<property name="sex" type="java.lang.String">
+			<column name="sex"></column>
+		</property>
+		<property name="phone" type="java.lang.String">
+			<column name="phone"></column>
+		</property>
+		<property name="email" type="java.lang.String">
+			<column name="email"></column>
+		</property>
+		<property name="company" type="java.lang.String">
+			<column name="company"></column>
+		</property>
+		<property name="com_postCode" type="java.lang.String">
+			<column name="com_postCode"></column>
+		</property>
+		<property name="com_address" type="java.lang.String">
+			<column name="com_address"></column>
+		</property>
+		<property name="signUpDate" type="java.sql.Timestamp">
+			<column name="signUpDate"></column>
+		</property>
+		
+		<many-to-one name="creater" column="creater_id"></many-to-one>
+	</class>
+</hibernate-mapping>

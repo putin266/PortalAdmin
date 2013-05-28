@@ -1,0 +1,232 @@
+﻿.info{
+width:650px;
+font-size:12px;
+line-height:24px;
+padding:20px 20px 20px 30px;
+margin:10px 0 0 0;
+float:left;
+background:url(../image/main_bg_top.png) top repeat-x;
+border-top:solid 3px #6a6a6a}
+.emp{
+margin-top:0}
+.years{
+margin-top:5px}
+.years a{
+margin:0 10px;
+text-decoration:none;
+color:#666666}
+.years a:hover{
+color:#0066FF;
+text-decoration:underline}
+.info .title{
+font-family:Microsoft YaHei,SimHei;
+color:#666666;
+font-weight:bold;
+font-size:16px;
+display:block;
+margin-bottom:5px}
+.brief_info{
+line-height:24px;
+padding:20px 20px 20px 30px;
+margin:10px 0 0 0;
+float:left;
+border:1px solid #d9e2e6;
+font-family:微软雅黑;
+background:url(../image/blue_bg.png) repeat-x white;
+color:#2f3033;
+overflow:hidden}
+.brief_info a{
+color:#FF3300;
+font-size:14px;
+margin:0 5px;}
+.brief_info a:hover{
+text-decoration:none}
+.imp{
+font-family:Microsoft YaHei,SimHei;
+font-size:18px;
+font-weight:bold;
+color:#0165ff;
+margin:0 10px}
+.iner_pic{
+float:left;
+margin:5px 20px 10px 0}
+.info ul li{
+background:url(../image/arrow.png) no-repeat;
+padding-left:15px;
+list-style:none;}
+.left ul, .right ul{
+width:320px;
+margin-bottom:10px}
+.left, .right{
+float:left}
+.right{
+margin-left:20px}
+.half_pic{
+float:right;
+padding:10px;
+line-height:15px;
+background-color:#f4f3e6}
+.half_word{
+float:left}
+.half_word span{
+display:block;
+width:440px;}
+.half_word ul{
+width:440px}
+.info .part{
+background:url(../image/main_bg_bottom.png) bottom repeat-x;
+border-bottom:solid 1px #f2ecdc;
+margin-bottom:10px;
+float:left}
+.info .part_admission{
+background:url(../image/main_bg_bottom.png) bottom repeat-x;
+border-bottom:solid 1px #f2ecdc;
+padding-bottom:10px;
+margin-bottom:20px;
+width:65%;
+}
+.info .part span{
+font-size:16px;
+font-weight:bold}
+.info .part a{
+float:right;
+position:relative;
+bottom:20px;
+right:10px}
+.bold{
+font-family:微软雅黑;
+font-size:14px;
+display:block;
+margin-bottom:5px;
+font-weight:bold;
+}
+.bolda{
+font-family:微软雅黑;
+font-size:13px;
+display:block;
+margin-bottom:5px;
+}
+.red{
+color:#0066FF}
+.catalog{
+width:180px;
+background-color:white;
+border:solid 1px #ddd4c9;
+line-height:24px;
+padding:10px}
+.catalog span{
+width:160px}
+.catalog ul{
+width:170px;}
+.catalog a{
+text-decoration:none;
+color:blue}
+.catalog a:hover{
+text-decoration:underline}
+ul span{
+font-size:20px;
+font-weight:bold;
+font-family:Candara}
+.info_logo{
+width:129px;
+text-align:center;
+border:solid 1px #a19898;
+background-color:white;
+float:left;
+margin:0 15px 10px 0}
+.info_logo .name{
+line-height:18px;
+padding:4px 8px;
+color:white;
+background-color:#a19898}
+.uni .info_logo .name{
+height:40px}
+.cpn table{
+text-align:center}
+
+.clr{
+clear:both}
+/*页内链接*/
+.insidea a{
+color:blue;
+text-decoration:none}
+.insidea a:hover{
+text-decoration:underline}
+.insidea a:visited{
+	color:blue
+}
+
+/*教师链接*/
+.teachera{
+font-size:12px;
+color:black;
+text-decoration:none}
+.teachera:hover{
+text-decoration:underline}
+.teachera:visited{
+	color:black
+}
+.tea_linx{
+font-family:微软雅黑;
+font-size:12px;
+}
+.tea_linx a{
+text-decoration:none;
+color:blue}
+.tea_linx a:hover{
+text-decoration:underline}
+.tea_linx a:visited{
+color:blue}
+/*table*/
+.mytable{
+border:0;
+margin:0px auto;
+}
+.mytable td{
+background-color:#FFFFFF;}
+.mytable .s1{
+background-color:#FFFFFF;}
+.mytable .s2{
+background-color:#f4f3e6;
+}
+.mytable table{
+background:none;
+line-height:20px;}
+.mytable table tr{
+background:none;}
+.mytable table tr td{
+background:none;
+padding:10px 20px;}
+.ad_name{
+width:200px;
+border-right:solid 1px #FFFFFF}
+.ad{
+width:320px}
+th{
+background-color:#0088cc;
+font-weight:normal}
+.table_holder{
+width:700px;
+padding:10px 0;
+margin-top:10px;
+float:left;
+background-color:#f5f6f8}
+/*************************************************/
+.info .pic_holder{
+float:left;
+width:186px;
+text-align:center;
+margin:0 15px 15px 0}
+.info .pic_holder a{
+color:black;
+text-decoration:none}
+.info .pic_holder a:hover{
+text-decoration:underline;
+color:blue}
+.info .pic{
+width:184px;
+border:solid 1px #bfc2cb}
+.info .pic img{
+border:solid 2px white}
+.info p img{
+margin:0 10px 10px 0}
