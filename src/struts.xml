@@ -3,55 +3,55 @@
 <struts>
 
 	<package name="service" extends="struts-default">
-		<action name="login"
-			class="edu.tongji.sse.ibm.action.LoginAction">
+		<action name="login" class="edu.tongji.sse.ibm.action.LoginAction">
 			<result name="success" type="dispatcher">
 				/admin/admin_dynamic.jsp
 			</result>
-			<result name="error" type="dispatcher">/index.jsp</result></action>
-		<action name="saveProfile"
-			class="edu.tongji.sse.ibm.action.SaveProfile">
-		<result name="success" type="dispatcher">/index.jsp</result></action>
-		<action name="deleteFile"
-			class="edu.tongji.sse.ibm.action.DeleteFile">
+			<result name="error" type="dispatcher">/index.jsp</result>
+		</action>
+		<action name="saveProfile" class="edu.tongji.sse.ibm.action.SaveProfile">
+			<result name="success" type="dispatcher">/index.jsp</result>
+		</action>
+		<action name="deleteFile" class="edu.tongji.sse.ibm.action.DeleteFile">
 			<result name="success" type="chain">editNews</result>
 		</action>
-		<action name="saveNews"
-			class="edu.tongji.sse.ibm.action.SaveNews">
+		<action name="saveNews" class="edu.tongji.sse.ibm.action.SaveNews">
 			<result name="success" type="chain">newslist</result>
 		</action>
-		<action name="deleteNews"
-			class="edu.tongji.sse.ibm.action.DeleteNews">
+		<action name="deleteNews" class="edu.tongji.sse.ibm.action.DeleteNews">
 			<result name="success" type="chain">newslist</result>
 		</action>
-		<action name="publishNews"
-			class="edu.tongji.sse.ibm.action.PublishNews">
+		<action name="publishNews" class="edu.tongji.sse.ibm.action.PublishNews">
 			<result name="success" type="chain">newslist</result>
-		</action></package>
+		</action>
+	</package>
 	<package name="pages" extends="struts-default">
-		<action name="profile"
-			class="edu.tongji.sse.ibm.action.ProfileEdit">
+		<action name="profile" class="edu.tongji.sse.ibm.action.ProfileEdit">
 			<result name="success" type="dispatcher">
 				/admin/admin_static.jsp
 			</result>
 		</action>
-		<action name="newslist"
-			class="edu.tongji.sse.ibm.action.NewsList">
+		<action name="newslist" class="edu.tongji.sse.ibm.action.NewsList">
 			<result name="success" type="dispatcher">
 				/admin/admin_dynamic.jsp
 			</result>
 		</action>
-		<action name="editNews"
-			class="edu.tongji.sse.ibm.action.EditNews">
+		<action name="editNews" class="edu.tongji.sse.ibm.action.EditNews">
 			<result name="success" type="dispatcher">
 				/admin/admin_item_edit.jsp
 			</result>
 		</action>
-		<action name="publishPage"
-			class="edu.tongji.sse.ibm.action.PublishNewsPage">
+		<action name="publishPage" class="edu.tongji.sse.ibm.action.PublishNewsPage">
 			<result name="success" type="dispatcher">
 				/admin/admin_publish_news.jsp
 			</result>
-		</action></package>
-		<constant name="struts.multipart.maxSize" value="314572800"></constant>
-		</struts>    
+		</action>
+		<action name="signupmanage" class="edu.tongji.sse.ibm.action.SignUpManagePage">
+			<result name="success" type="dispatcher">
+				/admin/admin_signup_man.jsp
+			</result>
+		</action>
+
+	</package>
+	<constant name="struts.multipart.maxSize" value="314572800"></constant>
+</struts>    
