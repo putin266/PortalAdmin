@@ -7,13 +7,18 @@ import java.sql.Timestamp;
 import org.apache.commons.io.FileUtils;
 import org.apache.struts2.ServletActionContext;
 
+import edu.tongji.sse.ibm.dao.NewsDAO;
+import edu.tongji.sse.ibm.dao.PicDAO;
 import edu.tongji.sse.ibm.dao.ResDAO;
 import edu.tongji.sse.ibm.pojo.News;
+import edu.tongji.sse.ibm.pojo.Pic;
 import edu.tongji.sse.ibm.pojo.Res;
+import edu.tongji.sse.ibm.tools.ImageUtil;
 
 public class FileUploadService {
-	public static String uploadFiles(File[] upload_file, String[] upload_fileFileName,
-			String sort, News news) throws IOException {
+	public static String uploadFiles(File[] upload_file,
+			String[] upload_fileFileName, String sort, News news)
+			throws IOException {
 		if (upload_file == null) {
 			return "error";
 		}
@@ -30,8 +35,8 @@ public class FileUploadService {
 			resource = new Res();
 			resource.setName(upload_fileFileName[i]);
 			resource.setCreateTime(new Timestamp(System.currentTimeMillis()));
-			if(sort != null){
-				resource.setSort(sort);				
+			if (sort != null) {
+				resource.setSort(sort);
 			}
 			resource.setURL("res/" + upload_fileFileName[i]);
 			resource.setNews(news);
@@ -45,27 +50,26 @@ public class FileUploadService {
 		}
 	}
 
-	public static String uploadFile(File upload_file, String upload_fileFileName,
-			String sort, String profile) throws IOException {
+	public static String uploadPic(File upload_file,
+			String upload_fileFileName, News news) throws IOException {
 		if (upload_file == null) {
 			return "error";
 		}
 		String realpath = ServletActionContext.getServletContext().getRealPath(
 				"/res");
-		Res resource = new Res();
-
-		File saveFile = new File(new File(realpath), upload_fileFileName);
-		if (!saveFile.getParentFile().exists())
-			saveFile.getParentFile().mkdirs();
-		FileUtils.copyFile(upload_file, saveFile);
-		resource = new Res();
-		resource.setName(upload_fileFileName);
-		resource.setCreateTime(new Timestamp(System.currentTimeMillis()));
-		resource.setSort(sort);
-		resource.setURL("res/" + upload_fileFileName);
-		resource.setProfile(profile);
-		resource = ResDAO.insertRes(resource);
-		if (resource == null) {
+		try {
+			ImageUtil.saveImageAsJpg(upload_file.getAbsolutePath(), realpath+"/"+upload_fileFileName, 135, 96);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		Pic pic = new Pic();
+		pic.setName(upload_fileFileName);
+		pic.setURL("/PortalAdmin/res/"+upload_fileFileName);
+		pic = (Pic) PicDAO.insert(pic);
+		System.out.println(pic.getURL());
+		news.setPic(pic);
+		NewsDAO.updateNews(news);
+		if (pic == null) {
 			return "error";
 		} else {
 			return "success";

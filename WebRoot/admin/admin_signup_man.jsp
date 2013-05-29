@@ -1,3 +1,4 @@
+<%@page import="edu.tongji.sse.ibm.pojo.CDUG_signUpForm"%>
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%
     String path = request.getContextPath();
@@ -39,25 +40,28 @@
     </div>
     <div class="span12 well">
       <div class="row">
+      <form action="toexcle" method="post">
         <div class="span3">
           <label>开始时间
-            <input type="text" id="beginTime">
+            <input type="text" id="beginTime" name="beginTime">
           </label>
         </div>
         <div class="span3">
           <label>结束时间
-            <input type="text" id="endTime">
+            <input type="text" id="endTime" name="endTime">
           </label>
         </div>
         <div class="span2" style="padding-top: 20px;">
-          <a class="btn btn-success" href="#">查看报名名单</a>
+         <!--  <a class="btn btn-success" href="" >查看报名名单</a>-->
+          <button class="btn btn-success" type="submit">查看报名名单</button>
         </div>
         <div class="span2" style="padding-top: 20px;">
           <a class="btn btn-success" href="#">生成电子表格</a>
         </div>
         <div class="span2" style="padding-top: 20px;">
-          <a class="btn btn-success" href="#">下载电子表格</a>
+          <a class="btn btn-success" href="">下载电子表格</a>
         </div>
+        </form>
       </div>
       <div class="row" style="padding-top: 30px;">
         <table class="table table-bordered table-condensed">
@@ -74,6 +78,27 @@
               <th>地址</th>
               <th>...</th>
             </tr>
+            
+            <%
+            	List<CDUG_signUpForm> formlist = (List<CDUG_signUpForm>) request.getAttribute("formlist");
+            	if(formlist != null){
+            	CDUG_signUpForm form = new CDUG_signUpForm();
+            	Iterator<CDUG_signUpForm> it = formlist.iterator();
+            	while(it.hasNext()){
+            	form = it.next();
+             %>
+             <tr>
+              <th><%=form.getId() %></th>
+              <th><%=form.getName() %></th>
+              <th><%=form.getSex() %></th>
+              <th><%=form.getPhone() %></th>
+              <th><%=form.getEmail() %></th>
+              <th><%=form.getCompany() %></th>
+              <th><%=form.getCom_postCode() %></th>
+              <th><%=form.getCom_address() %></th>
+              <th>...</th>
+            </tr>
+             <%} }%>
           </thead>
           <tbody>
           </tbody>

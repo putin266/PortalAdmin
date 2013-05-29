@@ -15,6 +15,8 @@ public class PublishNews extends ActionSupport {
 	private String sort;
 	private String content;
 	private File[] uploadFile;
+	private File pic;
+	private String picFileName;
 	private String[] uploadFileFileName;
 
 	public String execute() {
@@ -26,6 +28,7 @@ public class PublishNews extends ActionSupport {
 		NewsDAO.insertNews(news);
 		try {
 			FileUploadService.uploadFiles(uploadFile, uploadFileFileName, sort, news);
+			FileUploadService.uploadPic(pic, picFileName, news);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -70,6 +73,22 @@ public class PublishNews extends ActionSupport {
 
 	public void setUploadFileFileName(String[] uploadFileFileName) {
 		this.uploadFileFileName = uploadFileFileName;
+	}
+
+	public File getPic() {
+		return pic;
+	}
+
+	public void setPic(File pic) {
+		this.pic = pic;
+	}
+
+	public String getPicFileName() {
+		return picFileName;
+	}
+
+	public void setPicFileName(String picFileName) {
+		this.picFileName = picFileName;
 	}
 
 }

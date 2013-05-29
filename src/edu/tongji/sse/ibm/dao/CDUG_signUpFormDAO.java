@@ -1,5 +1,6 @@
 package edu.tongji.sse.ibm.dao;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import edu.tongji.sse.ibm.hibernateUtils.HibernateUtil;
@@ -15,6 +16,12 @@ public class CDUG_signUpFormDAO {
 	
 	public static List<CDUG_signUpForm> getFormList(){
 		List<CDUG_signUpForm> list = HibernateUtil.executeQuery("from CDUG_signUpForm", null);
+		return list;
+	}
+	
+	public static List<CDUG_signUpForm> getFormList(String startTime,String endTime){
+		String[] param = {startTime,endTime};
+		List<CDUG_signUpForm> list = HibernateUtil.executeQuery("from CDUG_signUpForm where signUpDate between ? and ?", param);
 		return list;
 	}
 

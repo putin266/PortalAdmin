@@ -20,7 +20,7 @@
 		<property name="createTime" type="java.sql.Timestamp">
 			<column name="createTime"></column>
 		</property>
-
+		<many-to-one name="pic" cascade="all" class="Pic" column="pic_id" unique="true"></many-to-one>
 		<set name="resources" cascade="all" lazy="false">
 			<key column="news_id" />
 			<one-to-many class="Res" />

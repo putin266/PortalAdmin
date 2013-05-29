@@ -54,7 +54,7 @@
 		<div class="row">
 			<div class="span6">
 					<label>标题: <input type="text" name="title" > </label>
-					新闻图片:<input class="" type="file" name="uploadFile"><br/>
+					新闻图片:<input class="" type="file" name="pic"><br/>
 			</div>
 			<div class="span6">
 				<div>
