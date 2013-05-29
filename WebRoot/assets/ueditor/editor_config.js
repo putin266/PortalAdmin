@@ -1,147 +1,148 @@
 /**
- *  ueditor完整配置项
- *  可以在这里配置整个编辑器的特性
+ *  ueditor瀹屾暣閰嶇疆椤�
+ *  鍙互鍦ㄨ繖閲岄厤缃暣涓紪杈戝櫒鐨勭壒鎬�
  */
-/**************************提示********************************
- * 所有被注释的配置项均为UEditor默认值。
- * 修改默认配置请首先确保已经完全明确该参数的真实用途。
- * 主要有两种修改方案，一种是取消此处注释，然后修改成对应参数；另一种是在实例化编辑器时传入对应参数。
- * 当升级编辑器时，可直接使用旧版配置文件替换新版配置文件,不用担心旧版配置文件中因缺少新功能所需的参数而导致脚本报错。
- **************************提示********************************/
+/**************************鎻愮ず********************************
+ * 鎵�湁琚敞閲婄殑閰嶇疆椤瑰潎涓篣Editor榛樿鍊笺�
+ * 淇敼榛樿閰嶇疆璇烽鍏堢‘淇濆凡缁忓畬鍏ㄦ槑纭鍙傛暟鐨勭湡瀹炵敤閫斻�
+ * 涓昏鏈変袱绉嶄慨鏀规柟妗堬紝涓�鏄彇娑堟澶勬敞閲婏紝鐒跺悗淇敼鎴愬搴斿弬鏁帮紱鍙︿竴绉嶆槸鍦ㄥ疄渚嬪寲缂栬緫鍣ㄦ椂浼犲叆瀵瑰簲鍙傛暟銆�
+ * 褰撳崌绾х紪杈戝櫒鏃讹紝鍙洿鎺ヤ娇鐢ㄦ棫鐗堥厤缃枃浠舵浛鎹㈡柊鐗堥厤缃枃浠�涓嶇敤鎷呭績鏃х増閰嶇疆鏂囦欢涓洜缂哄皯鏂板姛鑳芥墍闇�殑鍙傛暟鑰屽鑷磋剼鏈姤閿欍�
+ **************************鎻愮ず********************************/
 
 
 (function () {
     /**
-     * 编辑器资源文件根路径。它所表示的含义是：以编辑器实例化页面为当前路径，指向编辑器资源文件（即dialog等文件夹）的路径。
-     * 鉴于很多同学在使用编辑器的时候出现的种种路径问题，此处强烈建议大家使用"相对于网站根目录的相对路径"进行配置。
-     * "相对于网站根目录的相对路径"也就是以斜杠开头的形如"/myProject/ueditor/"这样的路径。
-     * 如果站点中有多个不在同一层级的页面需要实例化编辑器，且引用了同一UEditor的时候，此处的URL可能不适用于每个页面的编辑器。
-     * 因此，UEditor提供了针对不同页面的编辑器可单独配置的根路径，具体来说，在需要实例化编辑器的页面最顶部写上如下代码即可。当然，需要令此处的URL等于对应的配置。
+     * 缂栬緫鍣ㄨ祫婧愭枃浠舵牴璺緞銆傚畠鎵�〃绀虹殑鍚箟鏄細浠ョ紪杈戝櫒瀹炰緥鍖栭〉闈负褰撳墠璺緞锛屾寚鍚戠紪杈戝櫒璧勬簮鏂囦欢锛堝嵆dialog绛夋枃浠跺す锛夌殑璺緞銆�
+     * 閴翠簬寰堝鍚屽鍦ㄤ娇鐢ㄧ紪杈戝櫒鐨勬椂鍊欏嚭鐜扮殑绉嶇璺緞闂锛屾澶勫己鐑堝缓璁ぇ瀹朵娇鐢�鐩稿浜庣綉绔欐牴鐩綍鐨勭浉瀵硅矾寰�杩涜閰嶇疆銆�
+     * "鐩稿浜庣綉绔欐牴鐩綍鐨勭浉瀵硅矾寰�涔熷氨鏄互鏂滄潬寮�ご鐨勫舰濡�/myProject/ueditor/"杩欐牱鐨勮矾寰勩�
+     * 濡傛灉绔欑偣涓湁澶氫釜涓嶅湪鍚屼竴灞傜骇鐨勯〉闈㈤渶瑕佸疄渚嬪寲缂栬緫鍣紝涓斿紩鐢ㄤ簡鍚屼竴UEditor鐨勬椂鍊欙紝姝ゅ鐨刄RL鍙兘涓嶉�鐢ㄤ簬姣忎釜椤甸潰鐨勭紪杈戝櫒銆�
+     * 鍥犳锛孶Editor鎻愪緵浜嗛拡瀵逛笉鍚岄〉闈㈢殑缂栬緫鍣ㄥ彲鍗曠嫭閰嶇疆鐨勬牴璺緞锛屽叿浣撴潵璇达紝鍦ㄩ渶瑕佸疄渚嬪寲缂栬緫鍣ㄧ殑椤甸潰鏈�《閮ㄥ啓涓婂涓嬩唬鐮佸嵆鍙�褰撶劧锛岄渶瑕佷护姝ゅ鐨刄RL绛変簬瀵瑰簲鐨勯厤缃�
      * window.UEDITOR_HOME_URL = "/xxxx/xxxx/";
      */
     var URL;
 
     /**
-     * 此处配置写法适用于UEditor小组成员开发使用，外部部署用户请按照上述说明方式配置即可，建议保留下面两行，以兼容可在具体每个页面配置window.UEDITOR_HOME_URL的功能。
+     * 姝ゅ閰嶇疆鍐欐硶閫傜敤浜嶶Editor灏忕粍鎴愬憳寮�彂浣跨敤锛屽閮ㄩ儴缃茬敤鎴疯鎸夌収涓婅堪璇存槑鏂瑰紡閰嶇疆鍗冲彲锛屽缓璁繚鐣欎笅闈袱琛岋紝浠ュ吋瀹瑰彲鍦ㄥ叿浣撴瘡涓〉闈㈤厤缃畐indow.UEDITOR_HOME_URL鐨勫姛鑳姐�
      */
     var tmp = location.protocol.indexOf("file")==-1 ? location.pathname : location.href;
-    URL = window.UEDITOR_HOME_URL||tmp.substr(0,tmp.lastIndexOf("\/")+1).replace("_examples/","").replace("website/","");//这里你可以配置成ueditor目录在您网站的相对路径或者绝对路径（指以http开头的绝对路径）
+    URL = window.UEDITOR_HOME_URL||tmp.substr(0,tmp.lastIndexOf("\/")+1).replace("_examples/","").replace("website/","");//杩欓噷浣犲彲浠ラ厤缃垚ueditor鐩綍鍦ㄦ偍缃戠珯鐨勭浉瀵硅矾寰勬垨鑰呯粷瀵硅矾寰勶紙鎸囦互http寮�ご鐨勭粷瀵硅矾寰勶級
+    URL = "assets/ueditor/";
 
     /**
-     * 配置项主体。注意，此处所有涉及到路径的配置别遗漏URL变量。
+     * 閰嶇疆椤逛富浣撱�娉ㄦ剰锛屾澶勬墍鏈夋秹鍙婂埌璺緞鐨勯厤缃埆閬楁紡URL鍙橀噺銆�
      */
     window.UEDITOR_CONFIG = {
 
-        //为编辑器实例添加一个路径，这个不能被注释
+        //涓虹紪杈戝櫒瀹炰緥娣诲姞涓�釜璺緞锛岃繖涓笉鑳借娉ㄩ噴
         UEDITOR_HOME_URL : URL
-        //图片上传配置区
-        ,imageUrl:URL+"jsp/imageUp.jsp"             //图片上传提交地址
-        ,imagePath:URL + "jsp/"                     //图片修正地址，引用了fixedImagePath,如有特殊需求，可自行配置
-       //,imageFieldName:"upfile"                   //图片数据的key,若此处修改，需要在后台对应文件修改对应参数
-        //,compressSide:0                            //等比压缩的基准，确定maxImageSideLength参数的参照对象。0为按照最长边，1为按照宽度，2为按照高度
-        //,maxImageSideLength:900                    //上传图片最大允许的边长，超过会自动等比缩放,不缩放就设置一个比较大的值，更多设置在image.html中
+        //鍥剧墖涓婁紶閰嶇疆鍖�
+        ,imageUrl:URL+"jsp/imageUp.jsp"             //鍥剧墖涓婁紶鎻愪氦鍦板潃
+        ,imagePath:URL + "jsp/"                     //鍥剧墖淇鍦板潃锛屽紩鐢ㄤ簡fixedImagePath,濡傛湁鐗规畩闇�眰锛屽彲鑷閰嶇疆
+       //,imageFieldName:"upfile"                   //鍥剧墖鏁版嵁鐨刱ey,鑻ユ澶勪慨鏀癸紝闇�鍦ㄥ悗鍙板搴旀枃浠朵慨鏀瑰搴斿弬鏁�
+        //,compressSide:0                            //绛夋瘮鍘嬬缉鐨勫熀鍑嗭紝纭畾maxImageSideLength鍙傛暟鐨勫弬鐓у璞°�0涓烘寜鐓ф渶闀胯竟锛�涓烘寜鐓у搴︼紝2涓烘寜鐓ч珮搴�
+        //,maxImageSideLength:900                    //涓婁紶鍥剧墖鏈�ぇ鍏佽鐨勮竟闀匡紝瓒呰繃浼氳嚜鍔ㄧ瓑姣旂缉鏀�涓嶇缉鏀惧氨璁剧疆涓�釜姣旇緝澶х殑鍊硷紝鏇村璁剧疆鍦╥mage.html涓�
 
-        //涂鸦图片配置区
-        ,scrawlUrl:URL+"jsp/scrawlUp.jsp"           //涂鸦上传地址
-        ,scrawlPath:URL+"jsp/"                            //图片修正地址，同imagePath
+        //娑傞甫鍥剧墖閰嶇疆鍖�
+        ,scrawlUrl:URL+"jsp/scrawlUp.jsp"           //娑傞甫涓婁紶鍦板潃
+        ,scrawlPath:URL+"jsp/"                            //鍥剧墖淇鍦板潃锛屽悓imagePath
 
-        //附件上传配置区
-        ,fileUrl:URL+"jsp/fileUp.jsp"               //附件上传提交地址
-        ,filePath:URL + "jsp/"                   //附件修正地址，同imagePath
-        //,fileFieldName:"upfile"                    //附件提交的表单名，若此处修改，需要在后台对应文件修改对应参数
-         //远程抓取配置区
-        //,catchRemoteImageEnable:true               //是否开启远程图片抓取,默认开启
-        ,catcherUrl:URL +"jsp/getRemoteImage.jsp"   //处理远程图片抓取的地址
-        ,catcherPath:URL + "jsp/"                  //图片修正地址，同imagePath
-        //,catchFieldName:"upfile"                   //提交到后台远程图片uri合集，若此处修改，需要在后台对应文件修改对应参数
-        //,separater:'ue_separate_ue'               //提交至后台的远程图片地址字符串分隔符
-        //,localDomain:[]                            //本地顶级域名，当开启远程图片抓取时，除此之外的所有其它域名下的图片都将被抓取到本地,默认不抓取127.0.0.1和localhost
+        //闄勪欢涓婁紶閰嶇疆鍖�
+        ,fileUrl:URL+"jsp/fileUp.jsp"               //闄勪欢涓婁紶鎻愪氦鍦板潃
+        ,filePath:URL + "jsp/"                   //闄勪欢淇鍦板潃锛屽悓imagePath
+        //,fileFieldName:"upfile"                    //闄勪欢鎻愪氦鐨勮〃鍗曞悕锛岃嫢姝ゅ淇敼锛岄渶瑕佸湪鍚庡彴瀵瑰簲鏂囦欢淇敼瀵瑰簲鍙傛暟
+         //杩滅▼鎶撳彇閰嶇疆鍖�
+        //,catchRemoteImageEnable:true               //鏄惁寮�惎杩滅▼鍥剧墖鎶撳彇,榛樿寮�惎
+        ,catcherUrl:URL +"jsp/getRemoteImage.jsp"   //澶勭悊杩滅▼鍥剧墖鎶撳彇鐨勫湴鍧�
+        ,catcherPath:URL + "jsp/"                  //鍥剧墖淇鍦板潃锛屽悓imagePath
+        //,catchFieldName:"upfile"                   //鎻愪氦鍒板悗鍙拌繙绋嬪浘鐗噓ri鍚堥泦锛岃嫢姝ゅ淇敼锛岄渶瑕佸湪鍚庡彴瀵瑰簲鏂囦欢淇敼瀵瑰簲鍙傛暟
+        //,separater:'ue_separate_ue'               //鎻愪氦鑷冲悗鍙扮殑杩滅▼鍥剧墖鍦板潃瀛楃涓插垎闅旂
+        //,localDomain:[]                            //鏈湴椤剁骇鍩熷悕锛屽綋寮�惎杩滅▼鍥剧墖鎶撳彇鏃讹紝闄ゆ涔嬪鐨勬墍鏈夊叾瀹冨煙鍚嶄笅鐨勫浘鐗囬兘灏嗚鎶撳彇鍒版湰鍦�榛樿涓嶆姄鍙�27.0.0.1鍜宭ocalhost
 
-        //图片在线管理配置区
-        ,imageManagerUrl:URL + "jsp/imageManager.jsp"       //图片在线管理的处理地址
-        ,imageManagerPath:URL + "jsp/"                                    //图片修正地址，同imagePath
+        //鍥剧墖鍦ㄧ嚎绠＄悊閰嶇疆鍖�
+        ,imageManagerUrl:URL + "jsp/imageManager.jsp"       //鍥剧墖鍦ㄧ嚎绠＄悊鐨勫鐞嗗湴鍧�
+        ,imageManagerPath:URL + "jsp/"                                    //鍥剧墖淇鍦板潃锛屽悓imagePath
 
-        //屏幕截图配置区
-        ,snapscreenHost: '127.0.0.1'                                  //屏幕截图的server端文件所在的网站地址或者ip，请不要加http://
-        ,snapscreenServerUrl: URL +"jsp/imageUp.jsp" //屏幕截图的server端保存程序，UEditor的范例代码为“URL +"server/upload/php/snapImgUp.php"”
+        //灞忓箷鎴浘閰嶇疆鍖�
+        ,snapscreenHost: '127.0.0.1'                                  //灞忓箷鎴浘鐨剆erver绔枃浠舵墍鍦ㄧ殑缃戠珯鍦板潃鎴栬�ip锛岃涓嶈鍔爃ttp://
+        ,snapscreenServerUrl: URL +"jsp/imageUp.jsp" //灞忓箷鎴浘鐨剆erver绔繚瀛樼▼搴忥紝UEditor鐨勮寖渚嬩唬鐮佷负鈥淯RL +"server/upload/php/snapImgUp.php"鈥�
         ,snapscreenPath: URL + "jsp/"
-        //,snapscreenServerPort: 80                                    //屏幕截图的server端端口
-        //,snapscreenImgAlign: 'center'                                //截图的图片默认的排版方式
+        //,snapscreenServerPort: 80                                    //灞忓箷鎴浘鐨剆erver绔鍙�
+        //,snapscreenImgAlign: 'center'                                //鎴浘鐨勫浘鐗囬粯璁ょ殑鎺掔増鏂瑰紡
 
-        //word转存配置区
-        ,wordImageUrl:URL + "jsp/imageUp.jsp"             //word转存提交地址
+        //word杞瓨閰嶇疆鍖�
+        ,wordImageUrl:URL + "jsp/imageUp.jsp"             //word杞瓨鎻愪氦鍦板潃
         ,wordImagePath:URL + "jsp/"                       //
-        //,wordImageFieldName:"upfile"                     //word转存表单名若此处修改，需要在后台对应文件修改对应参数
+        //,wordImageFieldName:"upfile"                     //word杞瓨琛ㄥ崟鍚嶈嫢姝ゅ淇敼锛岄渶瑕佸湪鍚庡彴瀵瑰簲鏂囦欢淇敼瀵瑰簲鍙傛暟
 
-        //获取视频数据的地址
-        ,getMovieUrl:URL+"jsp/getMovie.jsp"                   //视频数据获取地址
+        //鑾峰彇瑙嗛鏁版嵁鐨勫湴鍧�
+        ,getMovieUrl:URL+"jsp/getMovie.jsp"                   //瑙嗛鏁版嵁鑾峰彇鍦板潃
 
-        //工具栏上的所有的功能按钮和下拉框，可以在new编辑器的实例时选择自己需要的从新定义
+        //宸ュ叿鏍忎笂鐨勬墍鏈夌殑鍔熻兘鎸夐挳鍜屼笅鎷夋锛屽彲浠ュ湪new缂栬緫鍣ㄧ殑瀹炰緥鏃堕�鎷╄嚜宸遍渶瑕佺殑浠庢柊瀹氫箟
         ,toolbars:[["fullscreen","undo","redo","insertunorderedlist","insertorderedlist","link","selectall","searchreplace","preview","insertimage","attachment","date","horizontal","spechars","background","bold","italic","underline","forecolor","strikethrough","backcolor","justifyleft","justifycenter","justifyright","justifyjustify","touppercase","tolowercase","indent","removeformat","formatmatch","pasteplain","customstyle","paragraph","rowspacingbottom","rowspacingtop","lineheight","fontfamily","fontsize","imagenone","imageleft","imageright","imagecenter","inserttable","mergeright","mergedown","splittorows","splittocols","splittocells","mergecells","insertcol","insertrow","deletecol","deleterow","insertparagraphbeforetable"]]
-        //当鼠标放在工具栏上时显示的tooltip提示,留空支持自动多语言配置，否则以配置值为准
+        //褰撻紶鏍囨斁鍦ㄥ伐鍏锋爮涓婃椂鏄剧ず鐨則ooltip鎻愮ず,鐣欑┖鏀寔鑷姩澶氳瑷�厤缃紝鍚﹀垯浠ラ厤缃�涓哄噯
         ,labelMap:{
             'anchor':'', 'undo':''
         }
         //webAppKey
-        //百度应用的APIkey，每个站长必须首先去百度官网注册一个key后方能正常使用app功能
+        //鐧惧害搴旂敤鐨凙PIkey锛屾瘡涓珯闀垮繀椤婚鍏堝幓鐧惧害瀹樼綉娉ㄥ唽涓�釜key鍚庢柟鑳芥甯镐娇鐢╝pp鍔熻兘
         ,webAppKey:""
 
 
-        //语言配置项,默认是zh-cn。有需要的话也可以使用如下这样的方式来自动多语言切换，当然，前提条件是lang文件夹下存在对应的语言文件：
-        //lang值也可以通过自动获取 (navigator.language||navigator.browserLanguage ||navigator.userLanguage).toLowerCase()
+        //璇█閰嶇疆椤�榛樿鏄痾h-cn銆傛湁闇�鐨勮瘽涔熷彲浠ヤ娇鐢ㄥ涓嬭繖鏍风殑鏂瑰紡鏉ヨ嚜鍔ㄥ璇█鍒囨崲锛屽綋鐒讹紝鍓嶆彁鏉′欢鏄痩ang鏂囦欢澶逛笅瀛樺湪瀵瑰簲鐨勮瑷�枃浠讹細
+        //lang鍊间篃鍙互閫氳繃鑷姩鑾峰彇 (navigator.language||navigator.browserLanguage ||navigator.userLanguage).toLowerCase()
     //,lang:'zh-cn'
 
         //,langPath:URL +"lang/"
 
-        //主题配置项,默认是default。有需要的话也可以使用如下这样的方式来自动多主题切换，当然，前提条件是themes文件夹下存在对应的主题文件：
-        //现有如下皮肤:default,modern,gorgeous
+        //涓婚閰嶇疆椤�榛樿鏄痙efault銆傛湁闇�鐨勮瘽涔熷彲浠ヤ娇鐢ㄥ涓嬭繖鏍风殑鏂瑰紡鏉ヨ嚜鍔ㄥ涓婚鍒囨崲锛屽綋鐒讹紝鍓嶆彁鏉′欢鏄痶hemes鏂囦欢澶逛笅瀛樺湪瀵瑰簲鐨勪富棰樻枃浠讹細
+        //鐜版湁濡備笅鐨偆:default,modern,gorgeous
         //,theme:'default'
         //,themePath:URL +"themes/"
 
-        //若实例化编辑器的页面手动修改的domain，此处需要设置为true
+        //鑻ュ疄渚嬪寲缂栬緫鍣ㄧ殑椤甸潰鎵嬪姩淇敼鐨刣omain锛屾澶勯渶瑕佽缃负true
         //,customDomain:false
 
-        //针对getAllHtml方法，会在对应的head标签中增加该编码设置。
+        //閽堝getAllHtml鏂规硶锛屼細鍦ㄥ搴旂殑head鏍囩涓鍔犺缂栫爜璁剧疆銆�
         //,charset:"utf-8"
 
-        //常用配置项目
-        //,isShow : true    //默认显示编辑器
+        //甯哥敤閰嶇疆椤圭洰
+        //,isShow : true    //榛樿鏄剧ず缂栬緫鍣�
 
-        //,initialContent:'欢迎使用ueditor!'    //初始化编辑器的内容,也可以通过textarea/script给值，看官网例子
+        //,initialContent:'娆㈣繋浣跨敤ueditor!'    //鍒濆鍖栫紪杈戝櫒鐨勫唴瀹�涔熷彲浠ラ�杩噒extarea/script缁欏�锛岀湅瀹樼綉渚嬪瓙
 
-        //,initialFrameWidth:1000  //初始化编辑器宽度,默认1000
-        //,initialFrameHeight:320  //初始化编辑器高度,默认320
+        //,initialFrameWidth:1000  //鍒濆鍖栫紪杈戝櫒瀹藉害,榛樿1000
+        //,initialFrameHeight:320  //鍒濆鍖栫紪杈戝櫒楂樺害,榛樿320
 
-        //,autoClearinitialContent:true //是否自动清除编辑器初始内容，注意：如果focus属性设置为true,这个也为真，那么编辑器一上来就会触发导致初始化的内容看不到了
+        //,autoClearinitialContent:true //鏄惁鑷姩娓呴櫎缂栬緫鍣ㄥ垵濮嬪唴瀹癸紝娉ㄦ剰锛氬鏋渇ocus灞炴�璁剧疆涓簍rue,杩欎釜涔熶负鐪燂紝閭ｄ箞缂栬緫鍣ㄤ竴涓婃潵灏变細瑙﹀彂瀵艰嚧鍒濆鍖栫殑鍐呭鐪嬩笉鍒颁簡
 
-        //,iframeCssUrl: URL + '/themes/iframe.css' //给编辑器内部引入一个css文件
-        //,textarea:'editorValue' // 提交表单时，服务器获取编辑器提交内容的所用的参数，多实例时可以给容器name属性，会将name给定的值最为每个实例的键值，不用每次实例化的时候都设置这个值
-        //,focus:true //初始化时，是否让编辑器获得焦点true或false
+        //,iframeCssUrl: URL + '/themes/iframe.css' //缁欑紪杈戝櫒鍐呴儴寮曞叆涓�釜css鏂囦欢
+        //,textarea:'editorValue' // 鎻愪氦琛ㄥ崟鏃讹紝鏈嶅姟鍣ㄨ幏鍙栫紪杈戝櫒鎻愪氦鍐呭鐨勬墍鐢ㄧ殑鍙傛暟锛屽瀹炰緥鏃跺彲浠ョ粰瀹瑰櫒name灞炴�锛屼細灏唍ame缁欏畾鐨勫�鏈�负姣忎釜瀹炰緥鐨勯敭鍊硷紝涓嶇敤姣忔瀹炰緥鍖栫殑鏃跺�閮借缃繖涓�
+        //,focus:true //鍒濆鍖栨椂锛屾槸鍚﹁缂栬緫鍣ㄨ幏寰楃劍鐐箃rue鎴杅alse
 
-        //,autoClearEmptyNode : true //getContent时，是否删除空的inlineElement节点（包括嵌套的情况）
+        //,autoClearEmptyNode : true //getContent鏃讹紝鏄惁鍒犻櫎绌虹殑inlineElement鑺傜偣锛堝寘鎷祵濂楃殑鎯呭喌锛�
 
-        //,fullscreen : false //是否开启初始化时即全屏，默认关闭
+        //,fullscreen : false //鏄惁寮�惎鍒濆鍖栨椂鍗冲叏灞忥紝榛樿鍏抽棴
 
-        //,readonly : false /编辑器初始化结束后,编辑区域是否是只读的，默认是false
+        //,readonly : false /缂栬緫鍣ㄥ垵濮嬪寲缁撴潫鍚�缂栬緫鍖哄煙鏄惁鏄彧璇荤殑锛岄粯璁ゆ槸false
 
-        //,zIndex : 900     //编辑器层级的基数,默认是900
+        //,zIndex : 900     //缂栬緫鍣ㄥ眰绾х殑鍩烘暟,榛樿鏄�00
 
-        //,imagePopup:true      //图片操作的浮层开关，默认打开
+        //,imagePopup:true      //鍥剧墖鎿嶄綔鐨勬诞灞傚紑鍏筹紝榛樿鎵撳紑
 
-        //,initialStyle:'body{font-size:18px}'   //编辑器内部样式,可以用来改变字体等
+        //,initialStyle:'body{font-size:18px}'   //缂栬緫鍣ㄥ唴閮ㄦ牱寮�鍙互鐢ㄦ潵鏀瑰彉瀛椾綋绛�
 
-        //,emotionLocalization:false //是否开启表情本地化，默认关闭。若要开启请确保emotion文件夹下包含官网提供的images表情文件夹
+        //,emotionLocalization:false //鏄惁寮�惎琛ㄦ儏鏈湴鍖栵紝榛樿鍏抽棴銆傝嫢瑕佸紑鍚纭繚emotion鏂囦欢澶逛笅鍖呭惈瀹樼綉鎻愪緵鐨刬mages琛ㄦ儏鏂囦欢澶�
 
-        //,pasteplain:false  //是否纯文本粘贴。false为不使用纯文本粘贴，true为使用纯文本粘贴
+        //,pasteplain:false  //鏄惁绾枃鏈矘璐淬�false涓轰笉浣跨敤绾枃鏈矘璐达紝true涓轰娇鐢ㄧ函鏂囨湰绮樿创
 
-        //,allHtmlEnabled:false //提交到后台的数据是否包含整个html字符串
+        //,allHtmlEnabled:false //鎻愪氦鍒板悗鍙扮殑鏁版嵁鏄惁鍖呭惈鏁翠釜html瀛楃涓�
         //iframeUrlMap
-        //dialog内容的路径 ～会被替换成URL,垓属性一旦打开，将覆盖所有的dialog的默认路径
+        //dialog鍐呭鐨勮矾寰�锝炰細琚浛鎹㈡垚URL,鍨撳睘鎬т竴鏃︽墦寮�紝灏嗚鐩栨墍鏈夌殑dialog鐨勯粯璁よ矾寰�
         //,iframeUrlMap:{
         // 'anchor':'~/dialogs/anchor/anchor.html',
         // }
         //insertorderedlist
-        //有序列表的下拉配置,值留空时支持多语言自动识别，若配置值，则以此值为准
+        //鏈夊簭鍒楄〃鐨勪笅鎷夐厤缃�鍊肩暀绌烘椂鏀寔澶氳瑷�嚜鍔ㄨ瘑鍒紝鑻ラ厤缃�锛屽垯浠ユ鍊间负鍑�
 //        ,'insertorderedlist':{
 //             'decimal' : '' ,         //'1,2,3...'
 //             'lower-alpha' : '' ,    // 'a,b,c...'
@@ -150,20 +151,20 @@
 //             'upper-roman' : ''      //'I,II,III...'
 //        }
         //insertunorderedlist
-        //无序列表的下拉配置，值留空时支持多语言自动识别，若配置值，则以此值为准
+        //鏃犲簭鍒楄〃鐨勪笅鎷夐厤缃紝鍊肩暀绌烘椂鏀寔澶氳瑷�嚜鍔ㄨ瘑鍒紝鑻ラ厤缃�锛屽垯浠ユ鍊间负鍑�
         //,insertunorderedlist : {
-        //    'circle' : '',  // '○ 小圆圈'
-        //    'disc' : '',    // '● 小圆点'
-        //    'square' : ''   //'■ 小方块'
+        //    'circle' : '',  // '鈼�灏忓渾鍦�
+        //    'disc' : '',    // '鈼�灏忓渾鐐�
+        //    'square' : ''   //'鈻�灏忔柟鍧�
         //}
         //fontfamily
-        //字体设置 label留空支持多语言自动切换，若配置，则以配置值为准
+        //瀛椾綋璁剧疆 label鐣欑┖鏀寔澶氳瑷�嚜鍔ㄥ垏鎹紝鑻ラ厤缃紝鍒欎互閰嶇疆鍊间负鍑�
 //        ,'fontfamily':[
-//            { label:'',name:'songti',val:'宋体,SimSun'},
-//            { label:'',name:'kaiti',val:'楷体,楷体_GB2312, SimKai'},
-//            { label:'',name:'yahei',val:'微软雅黑,Microsoft YaHei'},
-//            { label:'',name:'heiti',val:'黑体, SimHei'},
-//            { label:'',name:'lishu',val:'隶书, SimLi'},
+//            { label:'',name:'songti',val:'瀹嬩綋,SimSun'},
+//            { label:'',name:'kaiti',val:'妤蜂綋,妤蜂綋_GB2312, SimKai'},
+//            { label:'',name:'yahei',val:'寰蒋闆呴粦,Microsoft YaHei'},
+//            { label:'',name:'heiti',val:'榛戜綋, SimHei'},
+//            { label:'',name:'lishu',val:'闅朵功, SimLi'},
 //            { label:'',name:'andaleMono',val:'andale mono'},
 //            { label:'',name:'arial',val:'arial, helvetica,sans-serif'},
 //            { label:'',name:'arialBlack',val:'arial black,avant garde'},
@@ -172,30 +173,30 @@
 //            { label:'',name:'timesNewRoman',val:'times new roman'}
 //          ]
         //fontsize
-        //字号
+        //瀛楀彿
         //,'fontsize':[10, 11, 12, 14, 16, 18, 20, 24, 36]
         //paragraph
-        //段落格式 值留空时支持多语言自动识别，若配置，则以配置值为准
+        //娈佃惤鏍煎紡 鍊肩暀绌烘椂鏀寔澶氳瑷�嚜鍔ㄨ瘑鍒紝鑻ラ厤缃紝鍒欎互閰嶇疆鍊间负鍑�
         //,'paragraph':{'p':'', 'h1':'', 'h2':'', 'h3':'', 'h4':'', 'h5':'', 'h6':''}
         //rowspacingtop
-        //段间距 值和显示的名字相同
+        //娈甸棿璺�鍊煎拰鏄剧ず鐨勫悕瀛楃浉鍚�
         //,'rowspacingtop':['5', '10', '15', '20', '25']
         //rowspacingBottom
-        //段间距 值和显示的名字相同
+        //娈甸棿璺�鍊煎拰鏄剧ず鐨勫悕瀛楃浉鍚�
         //,'rowspacingbottom':['5', '10', '15', '20', '25']
         //lineheight
-        //行内间距 值和显示的名字相同
+        //琛屽唴闂磋窛 鍊煎拰鏄剧ず鐨勫悕瀛楃浉鍚�
         //,'lineheight':['1', '1.5','1.75','2', '3', '4', '5']
 
         //customstyle
-        //自定义样式，不支持国际化，此处配置值即可最后显示值
-        //block的元素是依据设置段落的逻辑设置的，inline的元素依据BIU的逻辑设置
-        //尽量使用一些常用的标签
-        //参数说明
-        //tag 使用的标签名字
-        //label 显示的名字也是用来标识不同类型的标识符，注意这个值每个要不同，
-        //style 添加的样式
-        //每一个对象就是一个自定义的样式
+        //鑷畾涔夋牱寮忥紝涓嶆敮鎸佸浗闄呭寲锛屾澶勯厤缃�鍗冲彲鏈�悗鏄剧ず鍊�
+        //block鐨勫厓绱犳槸渚濇嵁璁剧疆娈佃惤鐨勯�杈戣缃殑锛宨nline鐨勫厓绱犱緷鎹瓸IU鐨勯�杈戣缃�
+        //灏介噺浣跨敤涓�簺甯哥敤鐨勬爣绛�
+        //鍙傛暟璇存槑
+        //tag 浣跨敤鐨勬爣绛惧悕瀛�
+        //label 鏄剧ず鐨勫悕瀛椾篃鏄敤鏉ユ爣璇嗕笉鍚岀被鍨嬬殑鏍囪瘑绗︼紝娉ㄦ剰杩欎釜鍊兼瘡涓涓嶅悓锛�
+        //style 娣诲姞鐨勬牱寮�
+        //姣忎竴涓璞″氨鏄竴涓嚜瀹氫箟鐨勬牱寮�
         //,'customstyle':[
         //      {tag:'h1', name:'tc', label:'', style:'border-bottom:#ccc 2px solid;padding:0 4px 0 0;text-align:center;margin:0 0 20px 0;'},
         //      {tag:'h1', name:'tl',label:'', style:'border-bottom:#ccc 2px solid;padding:0 4px 0 0;margin:0 0 10px 0;'},
@@ -203,52 +204,52 @@
         //      {tag:'span',name:'hi', label:'', style:'font-style:italic;font-weight:bold;color:rgb(51, 153, 204)'}
         //  ]
 
-        //右键菜单的内容，可以参考plugins/contextmenu.js里边的默认菜单的例子，label留空支持国际化，否则以此配置为准
+        //鍙抽敭鑿滃崟鐨勫唴瀹癸紝鍙互鍙傝�plugins/contextmenu.js閲岃竟鐨勯粯璁よ彍鍗曠殑渚嬪瓙锛宭abel鐣欑┖鏀寔鍥介檯鍖栵紝鍚﹀垯浠ユ閰嶇疆涓哄噯
 //        ,contextMenu:[
 //            {
-//                label:'',       //显示的名称
-//                cmdName:'selectall',//执行的command命令，当点击这个右键菜单时
-//                //exec可选，有了exec就会在点击时执行这个function，优先级高于cmdName
+//                label:'',       //鏄剧ず鐨勫悕绉�
+//                cmdName:'selectall',//鎵ц鐨刢ommand鍛戒护锛屽綋鐐瑰嚮杩欎釜鍙抽敭鑿滃崟鏃�
+//                //exec鍙�锛屾湁浜唀xec灏变細鍦ㄧ偣鍑绘椂鎵ц杩欎釜function锛屼紭鍏堢骇楂樹簬cmdName
 //                exec:function () {
-//                    //this是当前编辑器的实例
+//                    //this鏄綋鍓嶇紪杈戝櫒鐨勫疄渚�
 //                    //this.ui._dialogs['inserttableDialog'].open();
 //                }
 //            }
 //           ]
         //wordCount
-        //,wordCount:1          //是否开启字数统计
-        //,maximumWords:10000       //允许的最大字符数
-    //字数统计提示，{#count}代表当前字数，{#leave}代表还可以输入多少字符数,留空支持多语言自动切换，否则按此配置显示
-        //,wordCountMsg:''   //当前已输入 {#count} 个字符，您还可以输入{#leave} 个字符
-        //超出字数限制提示  留空支持多语言自动切换，否则按此配置显示
-        //,wordOverFlowMsg:''    //<span style="color:red;">你输入的字符个数已经超出最大允许值，服务器可能会拒绝保存！</span>
+        //,wordCount:1          //鏄惁寮�惎瀛楁暟缁熻
+        //,maximumWords:10000       //鍏佽鐨勬渶澶у瓧绗︽暟
+    //瀛楁暟缁熻鎻愮ず锛寋#count}浠ｈ〃褰撳墠瀛楁暟锛寋#leave}浠ｈ〃杩樺彲浠ヨ緭鍏ュ灏戝瓧绗︽暟,鐣欑┖鏀寔澶氳瑷�嚜鍔ㄥ垏鎹紝鍚﹀垯鎸夋閰嶇疆鏄剧ず
+        //,wordCountMsg:''   //褰撳墠宸茶緭鍏�{#count} 涓瓧绗︼紝鎮ㄨ繕鍙互杈撳叆{#leave} 涓瓧绗�
+        //瓒呭嚭瀛楁暟闄愬埗鎻愮ず  鐣欑┖鏀寔澶氳瑷�嚜鍔ㄥ垏鎹紝鍚﹀垯鎸夋閰嶇疆鏄剧ず
+        //,wordOverFlowMsg:''    //<span style="color:red;">浣犺緭鍏ョ殑瀛楃涓暟宸茬粡瓒呭嚭鏈�ぇ鍏佽鍊硷紝鏈嶅姟鍣ㄥ彲鑳戒細鎷掔粷淇濆瓨锛�/span>
 
         //elementPathEnabled
-        //是否启用元素路径，默认是显示
+        //鏄惁鍚敤鍏冪礌璺緞锛岄粯璁ゆ槸鏄剧ず
         //,elementPathEnabled : true
         //removeFormat
-        //清除格式时可以删除的标签和属性
-        //removeForamtTags标签
+        //娓呴櫎鏍煎紡鏃跺彲浠ュ垹闄ょ殑鏍囩鍜屽睘鎬�
+        //removeForamtTags鏍囩
         //,removeFormatTags:'b,big,code,del,dfn,em,font,i,ins,kbd,q,samp,small,span,strike,strong,sub,sup,tt,u,var'
-        //removeFormatAttributes属性
+        //removeFormatAttributes灞炴�
         //,removeFormatAttributes:'class,style,lang,width,height,align,hspace,valign'
         //undo
-        //可以最多回退的次数,默认20
+        //鍙互鏈�鍥為�鐨勬鏁�榛樿20
         //,maxUndoCount:20
-        //当输入的字符数超过该值时，保存一次现场
+        //褰撹緭鍏ョ殑瀛楃鏁拌秴杩囪鍊兼椂锛屼繚瀛樹竴娆＄幇鍦�
         //,maxInputCount:1
         //autoHeightEnabled
-        // 是否自动长高,默认true
+        // 鏄惁鑷姩闀块珮,榛樿true
         //,autoHeightEnabled:true
-        //,minFrameWidth:800    //编辑器拖动时最小宽度,默认800
-        //,minFrameHeight:220  //编辑器拖动时最小高度,默认220
+        //,minFrameWidth:800    //缂栬緫鍣ㄦ嫋鍔ㄦ椂鏈�皬瀹藉害,榛樿800
+        //,minFrameHeight:220  //缂栬緫鍣ㄦ嫋鍔ㄦ椂鏈�皬楂樺害,榛樿220
         //autoFloatEnabled
-        //是否保持toolbar的位置不动,默认true
+        //鏄惁淇濇寔toolbar鐨勪綅缃笉鍔�榛樿true
         //,autoFloatEnabled:true
-        //浮动时工具栏距离浏览器顶部的高度，用于某些具有固定头部的页面
+        //娴姩鏃跺伐鍏锋爮璺濈娴忚鍣ㄩ《閮ㄧ殑楂樺害锛岀敤浜庢煇浜涘叿鏈夊浐瀹氬ご閮ㄧ殑椤甸潰
         //,topOffset:30
         //indentValue
-        //首行缩进距离,默认是2em
+        //棣栬缂╄繘璺濈,榛樿鏄�em
         //,indentValue:'2em'
     };
 })();

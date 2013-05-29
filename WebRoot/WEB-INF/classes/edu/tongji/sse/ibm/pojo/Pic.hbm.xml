@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="edu.tongji.sse.ibm.pojo">
+	<class name="Pic" lazy="false">
+		<id name="id" type="java.lang.Integer">
+			<column name="id"></column>
+			<generator class="native"></generator>
+		</id>
+		<property name="name" type="java.lang.String">
+			<column name="name"></column>
+		</property>
+		<property name="profile" type="java.lang.String">
+			<column name="profile" sql-type="TEXT"></column>
+		</property>
+		<property name="URL" type="java.lang.String">
+			<column name="URL"></column>
+		</property>
+		<many-to-one name="myAlbum" column="album_id"></many-to-one>
+		<many-to-one name="mySlider" column="slider_id"></many-to-one>
+	</class>
+</hibernate-mapping>

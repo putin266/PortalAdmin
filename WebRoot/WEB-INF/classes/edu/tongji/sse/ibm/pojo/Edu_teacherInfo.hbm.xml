@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="edu.tongji.sse.ibm.pojo">
+	<class name="Edu_teacherInfo" lazy="false">
+		<id name="id" type="java.lang.Integer">
+			<column name="id"></column>
+			<generator class="native"></generator>
+		</id>
+		<property name="email" type="java.lang.String">
+			<column name="email"></column>
+		</property>
+		<property name="name_ch" type="java.lang.String">
+			<column name="name_ch"></column>
+		</property>
+		<property name="name_en" type="java.lang.String">
+			<column name="name_en"></column>
+		</property>
+		<property name="positions" type="java.lang.String">
+			<column name="positions"></column>
+		</property>
+		<property name="courses" type="java.lang.String">
+			<column name="courses"></column>
+		</property>
+		<property name="picURL" type="java.lang.String">
+			<column name="picURL"></column>
+		</property>
+		<property name="researchDir" type="java.lang.String">
+			<column name="researchDir"></column>
+		</property>
+		<property name="info" type="java.lang.String">
+			<column name="info" sql-type="TEXT"></column>
+		</property>
+	</class>
+</hibernate-mapping>

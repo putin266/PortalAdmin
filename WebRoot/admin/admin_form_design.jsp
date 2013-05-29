@@ -9,20 +9,15 @@
 <!DOCTYPE html>
 <html>
   <head>
+  	<base href="<%=basePath%>">
     <title>同济大学IBM技术中心后台管理</title>
   
     <meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
     <meta http-equiv="description" content="同济大学IBM技术中心">
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     
-    <link rel="stylesheet" type="text/css" href="../assets/bootstrap/css/bootstrap.css">
-    <link rel="stylesheet" type="text/css" href="../assets/bootstrap/js/google-code-prettify/prettify.css">
-    <link rel="stylesheet" type="text/css" href="../assets/stylesheets/css/custom.css">
-    <link rel="stylesheet" type="text/css" href="../assets/stylesheets/css/admin.css">
-    <script type="text/javascript" src="ueditor/editor_config.js"></script>
-    <script type="text/javascript" src="ueditor/editor_all.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap.js"></script>
-
+    <s:include value="../include/links.jsp" />
+ 
   </head>
   
   <body>
@@ -466,21 +461,6 @@
     </div>
 
     <!-- scripts -->
-    <script type="text/javascript" src="../assets/bootstrap/js/jquery.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/google-code-prettify/prettify.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-transition.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-alert.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-modal.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-dropdown.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-scrollspy.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-tab.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-tooltip.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-popover.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-button.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-collapse.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-carousel.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/bootstrap-typeahead.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/fb.js"></script>
-    <script type="text/javascript" src="../assets/bootstrap/js/projects.js"></script>
+	<s:include value="../include/scripts.jsp" />
   </body>
 </html>
