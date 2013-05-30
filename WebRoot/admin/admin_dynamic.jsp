@@ -74,6 +74,7 @@
 	</div>
 
 	<!-- scripts -->
+	<script type="text/javascript" src="assets/bootstrap/js/bootstrap-datepicker.js"></script>
 	<s:include value="../include/scripts.jsp" />
 	<script type="text/javascript">
 		

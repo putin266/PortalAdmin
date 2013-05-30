@@ -17,8 +17,8 @@
     <meta http-equiv="description" content="同济大学IBM技术中心">
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     
+    <link rel="stylesheet" type="text/css" href="assets/bootstrap/css/datepicker.css">
     <s:include value="../include/links.jsp" />
-
   </head>
   
   <body>
@@ -108,9 +108,10 @@
 
     <!-- scripts -->
     <s:include value="../include/scripts.jsp" />
+    <script type="text/javascript" src="assets/bootstrap/js/bootstrap-datepicker.js"></script>
     <script type="text/javascript">
-      $('#beginTime').datepicker()
-      $('#endTime').datepicker()
+      $('#beginTime').datepicker({format: "yyyy-mm-dd"})
+      $('#endTime').datepicker({format: "yyyy-mm-dd"})
     </script>
   </body>
 </html>
