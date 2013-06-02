@@ -9,7 +9,7 @@
     <%@ page import="java.io.File"%>
     <%@ page import="java.io.FileOutputStream"%>
     <%@ page import="java.util.Date"%>
-    <%@ page import="ueditor.Uploader" %>
+    <%@ page import="edu.tongji.sse.ibm.tools.Uploader" %>
 
     <%
     request.setCharacterEncoding("utf-8");
@@ -17,7 +17,7 @@
 	
 	String param = request.getParameter("action");
     Uploader up = new Uploader(request);
-    String path = "upload";
+    String path = "../upload";
     up.setSavePath(path);
     String[] fileType = {".gif" , ".png" , ".jpg" , ".jpeg" , ".bmp"};
     up.setAllowFiles(fileType);

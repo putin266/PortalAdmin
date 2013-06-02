@@ -9917,6 +9917,816 @@ baidu.editor.ui = {};(function (){
     utils.inherits(MultiMenuPop, SplitButton);
 })();
 ///import core
+///commands 定制过滤规则
+///commandsName  Serialize
+///commandsTitle  定制过滤规则
+UE.plugins['serialize'] = function () {
+    var ie = browser.ie,
+        version = browser.version;
+
+    function ptToPx(value){
+        return /pt/.test(value) ? value.replace( /([\d.]+)pt/g, function( str ) {
+            return  Math.round(parseFloat(str) * 96 / 72) + "px";
+        } ) : value;
+    }
+    var me = this, autoClearEmptyNode = me.options.autoClearEmptyNode,
+        EMPTY_TAG = dtd.$empty,
+        parseHTML = function () {
+            //干掉<a> 后便变得空格，保留</a>  这样的空格
+            var RE_PART = /<(?:(?:\/([^>]+)>)|(?:!--([\S|\s]*?)-->)|(?:([^\s\/>]+)\s*((?:(?:"[^"]*")|(?:'[^']*')|[^"'<>])*)\/?>))/g,
+                RE_ATTR = /([\w\-:.]+)(?:(?:\s*=\s*(?:(?:"([^"]*)")|(?:'([^']*)')|([^\s>]+)))|(?=\s|$))/g,
+                EMPTY_ATTR = {checked:1,compact:1,declare:1,defer:1,disabled:1,ismap:1,multiple:1,nohref:1,noresize:1,noshade:1,nowrap:1,readonly:1,selected:1},
+                CDATA_TAG = {script:1,style: 1},
+                NEED_PARENT_TAG = {
+                    "li": { "$": 'ul', "ul": 1, "ol": 1 },
+                    "dd": { "$": "dl", "dl": 1 },
+                    "dt": { "$": "dl", "dl": 1 },
+                    "option": { "$": "select", "select": 1 },
+                    "td": { "$": "tr", "tr": 1 },
+                    "th": { "$": "tr", "tr": 1 },
+                    "tr": { "$": "tbody", "tbody": 1, "thead": 1, "tfoot": 1, "table": 1 },
+                    "tbody": { "$": "table", 'table':1,"colgroup": 1 },
+                    "thead": { "$": "table", "table": 1 },
+                    "tfoot": { "$": "table", "table": 1 },
+                    "col": { "$": "colgroup","colgroup":1 }
+                };
+            var NEED_CHILD_TAG = {
+                "table": "td", "tbody": "td", "thead": "td", "tfoot": "td", //"tr": "td",
+                "colgroup": "col",
+                "ul": "li", "ol": "li",
+                "dl": "dd",
+                "select": "option"
+            };
+
+            function parse( html, callbacks ) {
+
+                var match,
+                    nextIndex = 0,
+                    tagName,
+                    cdata;
+                RE_PART.exec( "" );
+                while ( (match = RE_PART.exec( html )) ) {
+
+                    var tagIndex = match.index;
+                    if ( tagIndex > nextIndex ) {
+                        var text = html.slice( nextIndex, tagIndex );
+                        if ( cdata ) {
+                            cdata.push( text );
+                        } else {
+                            callbacks.onText( text );
+                        }
+                    }
+                    nextIndex = RE_PART.lastIndex;
+                    if ( (tagName = match[1]) ) {
+                        tagName = tagName.toLowerCase();
+                        if ( cdata && tagName == cdata._tag_name ) {
+                            callbacks.onCDATA( cdata.join( '' ) );
+                            cdata = null;
+                        }
+                        if ( !cdata ) {
+                            callbacks.onTagClose( tagName );
+                            continue;
+                        }
+                    }
+                    if ( cdata ) {
+                        cdata.push( match[0] );
+                        continue;
+                    }
+                    if ( (tagName = match[3]) ) {
+                        if ( /="/.test( tagName ) ) {
+                            continue;
+                        }
+                        tagName = tagName.toLowerCase();
+                        var attrPart = match[4],
+                            attrMatch,
+                            attrMap = {},
+                            selfClosing = attrPart && attrPart.slice( -1 ) == '/';
+                        if ( attrPart ) {
+                            RE_ATTR.exec( "" );
+                            while ( (attrMatch = RE_ATTR.exec( attrPart )) ) {
+                                var attrName = attrMatch[1].toLowerCase(),
+                                    attrValue = attrMatch[2] || attrMatch[3] || attrMatch[4] || '';
+                                if ( !attrValue && EMPTY_ATTR[attrName] ) {
+                                    attrValue = attrName;
+                                }
+                                if ( attrName == 'style' ) {
+                                    if ( ie && version <= 6 ) {
+                                        attrValue = attrValue.replace( /(?!;)\s*([\w-]+):/g, function ( m, p1 ) {
+                                            return p1.toLowerCase() + ':';
+                                        } );
+                                    }
+                                }
+                                //没有值的属性不添加
+                                if ( attrValue ) {
+                                    attrMap[attrName] = attrValue.replace( /:\s*/g, ':' )
+                                }
+
+                            }
+                        }
+                        callbacks.onTagOpen( tagName, attrMap, selfClosing );
+                        if ( !cdata && CDATA_TAG[tagName] ) {
+                            cdata = [];
+                            cdata._tag_name = tagName;
+                        }
+                        continue;
+                    }
+                    if ( (tagName = match[2]) ) {
+                        callbacks.onComment( tagName );
+                    }
+                }
+                if ( html.length > nextIndex ) {
+                    callbacks.onText( html.slice( nextIndex, html.length ) );
+                }
+            }
+
+            return function ( html, forceDtd ) {
+
+                var fragment = {
+                    type: 'fragment',
+                    parent: null,
+                    children: []
+                };
+                var currentNode = fragment;
+
+                function addChild( node ) {
+                    node.parent = currentNode;
+                    currentNode.children.push( node );
+                }
+
+                function addElement( element, open ) {
+                    var node = element;
+                    // 遇到结构化标签的时候
+                    if ( NEED_PARENT_TAG[node.tag] ) {
+                        // 考虑这种情况的时候, 结束之前的标签
+                        // e.g. <table><tr><td>12312`<tr>`4566
+                        while ( NEED_PARENT_TAG[currentNode.tag] && NEED_PARENT_TAG[currentNode.tag][node.tag] ) {
+                            currentNode = currentNode.parent;
+                        }
+                        // 如果前一个标签和这个标签是同一级, 结束之前的标签
+                        // e.g. <ul><li>123<li>
+                        if ( currentNode.tag == node.tag ) {
+                            currentNode = currentNode.parent;
+                        }
+                        // 向上补齐父标签
+                        while ( NEED_PARENT_TAG[node.tag] ) {
+                            if ( NEED_PARENT_TAG[node.tag][currentNode.tag] ) break;
+                            node = node.parent = {
+                                type: 'element',
+                                tag: NEED_PARENT_TAG[node.tag]['$'],
+                                attributes: {},
+                                children: [node]
+                            };
+                        }
+                    }
+                    if ( forceDtd ) {
+                        // 如果遇到这个标签不能放在前一个标签内部，则结束前一个标签,span单独处理
+                        while ( dtd[node.tag] && !(currentNode.tag == 'span' ? utils.extend( dtd['strong'], {'a':1,'A':1} ) : (dtd[currentNode.tag] || dtd['div']))[node.tag] ) {
+                            if ( tagEnd( currentNode ) ) continue;
+                            if ( !currentNode.parent ) break;
+                            currentNode = currentNode.parent;
+                        }
+                    }
+                    node.parent = currentNode;
+                    currentNode.children.push( node );
+                    if ( open ) {
+                        currentNode = element;
+                    }
+                    if ( element.attributes.style ) {
+                        element.attributes.style = element.attributes.style.toLowerCase();
+                    }
+                    return element;
+                }
+
+                // 结束一个标签的时候，需要判断一下它是否缺少子标签
+                // e.g. <table></table>
+                function tagEnd( node ) {
+                    var needTag;
+                    if ( !node.children.length && (needTag = NEED_CHILD_TAG[node.tag]) ) {
+                        addElement( {
+                            type: 'element',
+                            tag: needTag,
+                            attributes: {},
+                            children: []
+                        }, true );
+                        return true;
+                    }
+                    return false;
+                }
+
+                parse( html, {
+                    onText: function ( text ) {
+
+                        while ( !(dtd[currentNode.tag] || dtd['div'])['#'] ) {
+                            //节点之间的空白不能当作节点处理
+//                                if(/^[ \t\r\n]+$/.test( text )){
+//                                    return;
+//                                }
+                            if ( tagEnd( currentNode ) ) continue;
+                            currentNode = currentNode.parent;
+                        }
+                        //if(/^[ \t\n\r]*/.test(text))
+                        addChild( {
+                            type: 'text',
+                            data: text
+                        } );
+
+                    },
+                    onComment: function ( text ) {
+                        addChild( {
+                            type: 'comment',
+                            data: text
+                        } );
+                    },
+                    onCDATA: function ( text ) {
+                        while ( !(dtd[currentNode.tag] || dtd['div'])['#'] ) {
+                            if ( tagEnd( currentNode ) ) continue;
+                            currentNode = currentNode.parent;
+                        }
+                        addChild( {
+                            type: 'cdata',
+                            data: text
+                        } );
+                    },
+                    onTagOpen: function ( tag, attrs, closed ) {
+                        closed = closed || EMPTY_TAG[tag] ;
+                        addElement( {
+                            type: 'element',
+                            tag: tag,
+                            attributes: attrs,
+                            closed: closed,
+                            children: []
+                        }, !closed );
+                    },
+                    onTagClose: function ( tag ) {
+                        var node = currentNode;
+                        // 向上找匹配的标签, 这里不考虑dtd的情况是因为tagOpen的时候已经处理过了, 这里不会遇到
+                        while ( node && tag != node.tag ) {
+                            node = node.parent;
+                        }
+                        if ( node ) {
+                            // 关闭中间的标签
+                            for ( var tnode = currentNode; tnode !== node.parent; tnode = tnode.parent ) {
+                                tagEnd( tnode );
+                            }
+                            //去掉空白的inline节点
+                            //分页，锚点保留
+                            //|| dtd.$removeEmptyBlock[node.tag])
+//                                if ( !node.children.length && dtd.$removeEmpty[node.tag] && !node.attributes.anchorname && node.attributes['class'] != 'pagebreak' && node.tag != 'a') {
+//
+//                                    node.parent.children.pop();
+//                                }
+                            currentNode = node.parent;
+                        } else {
+                            // 如果没有找到开始标签, 则创建新标签
+                            // eg. </div> => <div></div>
+                            //针对视屏网站embed会给结束符，这里特殊处理一下
+                            if ( !(dtd.$removeEmpty[tag] || dtd.$removeEmptyBlock[tag] || tag == 'embed') ) {
+                                node = {
+                                    type: 'element',
+                                    tag: tag,
+                                    attributes: {},
+                                    children: []
+                                };
+                                addElement( node, true );
+                                tagEnd( node );
+                                currentNode = node.parent;
+                            }
+
+
+                        }
+                    }
+                } );
+                // 处理这种情况, 只有开始标签没有结束标签的情况, 需要关闭开始标签
+                // eg. <table>
+                while ( currentNode !== fragment ) {
+                    tagEnd( currentNode );
+                    currentNode = currentNode.parent;
+                }
+                return fragment;
+            };
+        }();
+    var unhtml1 = function () {
+        var map = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+
+        function rep( m ) {
+            return map[m];
+        }
+
+        return function ( str ) {
+            str = str + '';
+            return str ? str.replace( /[<>"']/g, rep ) : '';
+        };
+    }();
+    var toHTML = function () {
+        function printChildren( node, pasteplain ) {
+            var children = node.children;
+
+            var buff = [];
+            for ( var i = 0,ci; ci = children[i]; i++ ) {
+
+                buff.push( toHTML( ci, pasteplain ) );
+            }
+            return buff.join( '' );
+        }
+
+        function printAttrs( attrs ) {
+            var buff = [];
+            for ( var k in attrs ) {
+                var value = attrs[k];
+
+                if(k == 'style'){
+
+                    //pt==>px
+                    value = ptToPx(value);
+                    //color rgb ==> hex
+                    if(/rgba?\s*\([^)]*\)/.test(value)){
+                        value = value.replace( /rgba?\s*\(([^)]*)\)/g, function( str ) {
+                            return utils.fixColor('color',str);
+                        } )
+                    }
+                    //过滤掉所有的white-space,在纯文本编辑器里粘贴过来的内容，到chrome中会带有span和white-space属性，导致出现不能折行的情况
+                    //所以在这里去掉这个属性
+                    attrs[k] = utils.optCss(value.replace(/windowtext/g,'#000'))
+                        .replace(/white-space[^;]+;/g,'');
+                    if(!attrs[k]){
+                        continue;
+                    }
+                }
+
+                buff.push( k + '="' + unhtml1( attrs[k] ) + '"' );
+            }
+            return buff.join( ' ' )
+        }
+
+        function printData( node, notTrans ) {
+            //trace:1399 输入html代码时空格转换成为&nbsp;
+            //node.data.replace(/&nbsp;/g,' ') 针对pre中的空格和出现的&nbsp;把他们在得到的html代码中都转换成为空格，为了在源码模式下显示为空格而不是&nbsp;
+            return notTrans ? node.data.replace(/&nbsp;/g,' ') : unhtml1( node.data ).replace(/ /g,'&nbsp;');
+        }
+
+        //纯文本模式下标签转换
+        var transHtml = {
+            'li':'p',
+            'h1':'p','h2':'p','h3':'p','h4':'p','h5':'p','h6':'p',
+            'tr':'p',
+            'br':'br',
+            'div':'p',
+            'p':'p'//trace:1398 碰到p标签自己要加上p,否则transHtml[tag]是undefined
+        };
+        var clearTagName ={
+            'table':1,
+            'tbody':1,
+            'ol':1,
+            'ul':1,
+            'dt':1
+        }
+        function printElement( node, pasteplain ) {
+            if ( node.type == 'element' && !node.children.length && (dtd.$removeEmpty[node.tag]) && node.tag != 'a' && utils.isEmptyObject(node.attributes) && autoClearEmptyNode) {// 锚点保留
+                return html;
+            }
+            var tag = node.tag;
+            if ( pasteplain && tag == 'td' ) {
+                if ( !html ) html = '';
+                html += printChildren( node, pasteplain ) + '&nbsp;&nbsp;&nbsp;';
+            } else {
+                var attrs = printAttrs( node.attributes );
+
+                var html = pasteplain && clearTagName[tag] ? '' :
+                    '<' + (pasteplain && transHtml[tag] !==undefined? transHtml[tag] : tag) + (attrs ? ' ' + attrs : '') + (EMPTY_TAG[tag] ? ' />' : '>');
+                if ( !EMPTY_TAG[tag] ) {
+                    //trace:1627 ,2070
+                    //p标签为空，将不占位这里占位符不起作用，用&nbsp;或者br
+                    if( tag == 'p' && !node.children.length){
+                        html += browser.ie ? '&nbsp;' : '<br/>';
+                    }
+                    html += printChildren( node, pasteplain );
+                    html +=(pasteplain && clearTagName[tag] ? '' : '</' + (pasteplain && transHtml[tag]!==undefined? transHtml[tag] : tag) + '>');
+                }
+            }
+
+            return html;
+        }
+
+        return function ( node, pasteplain ) {
+            if ( node.type == 'fragment' ) {
+                return printChildren( node, pasteplain );
+            } else if ( node.type == 'element' ) {
+                return printElement( node, pasteplain );
+            } else if ( node.type == 'text' || node.type == 'cdata' ) {
+                return printData( node, dtd.$notTransContent[node.parent.tag] );
+            } else if ( node.type == 'comment' ) {
+                return '<!--' + node.data + '-->';
+            }
+            return '';
+        };
+    }();
+
+    var NODE_NAME_MAP = {
+        'text': '#text',
+        'comment': '#comment',
+        'cdata': '#cdata-section',
+        'fragment': '#document-fragment'
+    };
+
+
+    //写入编辑器时，调用，进行转换操作
+    function transNode( node, word_img_flag ) {
+
+        var sizeMap = [0, 10, 12, 16, 18, 24, 32, 48],
+            attr,
+            indexOf = utils.indexOf;
+        switch ( node.tag ) {
+            case 'script':
+                node.tag = 'div';
+                node.attributes._ue_org_tagName = 'script';
+                node.attributes._ue_div_script = 1;
+                node.attributes._ue_script_data = node.children[0] ? encodeURIComponent(node.children[0].data)  : '';
+                node.attributes._ue_custom_node_ = 1;
+                node.children = [];
+                break;
+            case 'style':
+                node.tag = 'div';
+                node.attributes._ue_div_style = 1;
+                node.attributes._ue_org_tagName = 'style';
+                node.attributes._ue_style_data = node.children[0] ? encodeURIComponent(node.children[0].data)  : '';
+                node.attributes._ue_custom_node_ = 1;
+                node.children = [];
+                break;
+            case 'img':
+                //todo base64暂时去掉，后边做远程图片上传后，干掉这个
+                if(node.attributes.src && /^data:/.test(node.attributes.src)){
+                    return {
+                        type : 'fragment',
+                        children:[]
+                    }
+                }
+                if ( node.attributes.src && /^(?:file)/.test( node.attributes.src ) ) {
+                    if ( !/(gif|bmp|png|jpg|jpeg)$/.test( node.attributes.src ) ) {
+                        return {
+                            type : 'fragment',
+                            children:[]
+                        }
+                    }
+                    node.attributes.word_img = node.attributes.src;
+                    node.attributes.src = me.options.UEDITOR_HOME_URL + 'themes/default/images/spacer.gif';
+                    var flag = parseInt(node.attributes.width)<128||parseInt(node.attributes.height)<43;
+                    node.attributes.style="background:url(" + (flag? me.options.themePath+me.options.theme +"/images/word.gif":me.options.langPath+me.options.lang + "/images/localimage.png")+") no-repeat center center;border:1px solid #ddd";
+                    //node.attributes.style = 'width:395px;height:173px;';
+                    word_img_flag && (word_img_flag.flag = 1);
+                }
+                if(browser.ie && browser.version < 7 )
+                    node.attributes.orgSrc = node.attributes.src;
+                node.attributes.data_ue_src = node.attributes.data_ue_src || node.attributes.src;
+                break;
+            case 'li':
+                var child = node.children[0];
+
+                if ( !child || child.type != 'element' || child.tag != 'p' && dtd.p[child.tag] ) {
+                    var tmpPNode = {
+                        type: 'element',
+                        tag: 'p',
+                        attributes: {},
+
+                        parent : node
+                    };
+                    tmpPNode.children = child ? node.children :[
+                        browser.ie ? {
+                            type:'text',
+                            data:domUtils.fillChar,
+                            parent : tmpPNode
+
+                        }:
+                        {
+                            type : 'element',
+                            tag : 'br',
+                            attributes:{},
+                            closed: true,
+                            children: [],
+                            parent : tmpPNode
+                        }
+                    ];
+                    node.children =   [tmpPNode];
+                }
+                break;
+            case 'table':
+            case 'td':
+                optStyle( node );
+                break;
+            case 'a'://锚点，a==>img
+                if ( node.attributes['anchorname'] ) {
+                    node.tag = 'img';
+                    node.attributes = {
+                        'class' : 'anchorclass',
+                        'anchorname':node.attributes['name']
+                    };
+                    node.closed = 1;
+                }
+                node.attributes.href && (node.attributes.data_ue_src = node.attributes.href);
+                break;
+            case 'b':
+                node.tag = node.name = 'strong';
+                break;
+            case 'i':
+                node.tag = node.name = 'em';
+                break;
+            case 'u':
+                node.tag = node.name = 'span';
+                node.attributes.style = (node.attributes.style || '') + ';text-decoration:underline;';
+                break;
+            case 's':
+            case 'del':
+                node.tag = node.name = 'span';
+                node.attributes.style = (node.attributes.style || '') + ';text-decoration:line-through;';
+                if ( node.children.length == 1 ) {
+                    child = node.children[0];
+                    if ( child.tag == node.tag ) {
+                        node.attributes.style += ";" + child.attributes.style;
+                        node.children = child.children;
+
+                    }
+                }
+                break;
+            case 'span':
+
+                var style = node.attributes.style;
+                if ( style ) {
+                    if ( !node.attributes.style  || browser.webkit && style == "white-space:nowrap;") {
+                        delete node.attributes.style;
+                    }
+                }
+
+                //针对ff3.6span的样式不能正确继承的修复
+
+                if(browser.gecko && browser.version <= 10902 && node.parent){
+                    var parent = node.parent;
+                    if(parent.tag == 'span' && parent.attributes && parent.attributes.style){
+                        node.attributes.style = parent.attributes.style + ';' + node.attributes.style;
+                    }
+                }
+                if ( utils.isEmptyObject( node.attributes ) && autoClearEmptyNode) {
+                    node.type = 'fragment'
+                }
+                break;
+            case 'font':
+                node.tag = node.name = 'span';
+                attr = node.attributes;
+                node.attributes = {
+                    'style': (attr.size ? 'font-size:' + (sizeMap[attr.size] || 12) + 'px' : '')
+                        + ';' + (attr.color ? 'color:'+ attr.color : '')
+                        + ';' + (attr.face ? 'font-family:'+ attr.face : '')
+                        + ';' + (attr.style||'')
+                };
+
+                while(node.parent.tag == node.tag && node.parent.children.length == 1){
+                    node.attributes.style && (node.parent.attributes.style ? (node.parent.attributes.style += ";" + node.attributes.style) : (node.parent.attributes.style = node.attributes.style));
+                    node.parent.children = node.children;
+                    node = node.parent;
+
+                }
+                break;
+            case 'p':
+                if ( node.attributes.align ) {
+                    node.attributes.style = (node.attributes.style || '') + ';text-align:' +
+                        node.attributes.align + ';';
+                    delete node.attributes.align;
+                }
+
+        }
+        return node;
+    }
+
+    function optStyle( node ) {
+        if ( ie && node.attributes.style ) {
+            var style = node.attributes.style;
+            node.attributes.style = style.replace(/;\s*/g,';');
+            node.attributes.style = node.attributes.style.replace( /^\s*|\s*$/, '' )
+        }
+    }
+    //getContent调用转换
+    function transOutNode( node ) {
+
+        switch ( node.tag ) {
+            case 'div' :
+                if(node.attributes._ue_div_script){
+                    node.tag = 'script';
+                    node.children = [{type:'cdata',data:node.attributes._ue_script_data?decodeURIComponent(node.attributes._ue_script_data):'',parent:node}];
+                    delete node.attributes._ue_div_script;
+                    delete node.attributes._ue_script_data;
+                    delete node.attributes._ue_custom_node_;
+                    delete node.attributes._ue_org_tagName;
+
+                }
+                if(node.attributes._ue_div_style){
+                    node.tag = 'style';
+                    node.children = [{type:'cdata',data:node.attributes._ue_style_data?decodeURIComponent(node.attributes._ue_style_data):'',parent:node}];
+                    delete node.attributes._ue_div_style;
+                    delete node.attributes._ue_style_data;
+                    delete node.attributes._ue_custom_node_;
+                    delete node.attributes._ue_org_tagName;
+
+                }
+                break;
+            case 'table':
+                !node.attributes.style && delete node.attributes.style;
+                if ( ie && node.attributes.style ) {
+
+                    optStyle( node );
+                }
+                break;
+            case 'td':
+            case 'th':
+                if ( /display\s*:\s*none/i.test( node.attributes.style ) ) {
+                    return {
+                        type: 'fragment',
+                        children: []
+                    };
+                }
+                if ( ie && !node.children.length ) {
+                    var txtNode = {
+                        type: 'text',
+                        data:domUtils.fillChar,
+                        parent : node
+                    };
+                    node.children[0] = txtNode;
+                }
+                if ( ie && node.attributes.style ) {
+                    optStyle( node );
+                }
+                break;
+            case 'img'://锚点，img==>a
+                if ( node.attributes.anchorname ) {
+                    node.tag = 'a';
+                    node.attributes = {
+                        name : node.attributes.anchorname,
+                        anchorname : 1
+                    };
+                    node.closed = null;
+                }else{
+                    if(node.attributes.data_ue_src){
+                        node.attributes.src = node.attributes.data_ue_src;
+                        delete node.attributes.data_ue_src;
+                    }
+                }
+                break;
+
+            case 'a':
+                if(node.attributes.data_ue_src){
+                    node.attributes.href = node.attributes.data_ue_src;
+                    delete node.attributes.data_ue_src;
+                }
+        }
+
+        return node;
+    }
+
+    function childrenAccept( node, visit, ctx ) {
+
+        if ( !node.children || !node.children.length ) {
+            return node;
+        }
+        var children = node.children;
+        for ( var i = 0; i < children.length; i++ ) {
+            var newNode = visit( children[i], ctx );
+            if ( newNode.type == 'fragment' ) {
+                var args = [i, 1];
+                args.push.apply( args, newNode.children );
+                children.splice.apply( children, args );
+                //节点为空的就干掉，不然后边的补全操作会添加多余的节点
+                if ( !children.length ) {
+                    node = {
+                        type: 'fragment',
+                        children: []
+                    }
+                }
+                i --;
+            } else {
+                children[i] = newNode;
+            }
+        }
+        return node;
+    }
+
+    function Serialize( rules ) {
+        this.rules = rules;
+    }
+
+
+    Serialize.prototype = {
+        // NOTE: selector目前只支持tagName
+        rules: null,
+        // NOTE: node必须是fragment
+        filter: function ( node, rules, modify ) {
+            rules = rules || this.rules;
+            var whiteList = rules && rules.whiteList;
+            var blackList = rules && rules.blackList;
+
+            function visitNode( node, parent ) {
+                node.name = node.type == 'element' ?
+                    node.tag : NODE_NAME_MAP[node.type];
+                if ( parent == null ) {
+                    return childrenAccept( node, visitNode, node );
+                }
+
+                if ( blackList && (blackList[node.name]|| (node.attributes && node.attributes._ue_org_tagName && blackList[node.attributes._ue_org_tagName]))) {
+                    modify && (modify.flag = 1);
+                    return {
+                        type: 'fragment',
+                        children: []
+                    };
+                }
+                if ( whiteList ) {
+                    if ( node.type == 'element' ) {
+                        if ( parent.type == 'fragment' ? whiteList[node.name] : whiteList[node.name] && whiteList[parent.name][node.name] ) {
+
+                            var props;
+                            if ( (props = whiteList[node.name].$) ) {
+                                var oldAttrs = node.attributes;
+                                var newAttrs = {};
+                                for ( var k in props ) {
+                                    if ( oldAttrs[k] ) {
+                                        newAttrs[k] = oldAttrs[k];
+                                    }
+                                }
+                                node.attributes = newAttrs;
+                            }
+
+
+                        } else {
+                            modify && (modify.flag = 1);
+                            node.type = 'fragment';
+                            // NOTE: 这里算是一个hack
+                            node.name = parent.name;
+                        }
+                    } else {
+                        // NOTE: 文本默认允许
+                    }
+                }
+                if ( blackList || whiteList ) {
+                    childrenAccept( node, visitNode, node );
+                }
+                return node;
+            }
+
+            return visitNode( node, null );
+        },
+        transformInput: function ( node, word_img_flag ) {
+
+            function visitNode( node ) {
+                node = transNode( node, word_img_flag );
+
+                node = childrenAccept( node, visitNode, node );
+
+                if ( me.options.pageBreakTag && node.type == 'text' && node.data.replace( /\s/g, '' ) == me.options.pageBreakTag ) {
+
+                    node.type = 'element';
+                    node.name = node.tag = 'hr';
+
+                    delete node.data;
+                    node.attributes = {
+                        'class' : 'pagebreak',
+                        noshade:"noshade",
+                        size:"5",
+                        'unselectable' : 'on',
+                        'style' : 'moz-user-select:none;-khtml-user-select: none;'
+                    };
+
+                    node.children = [];
+
+                }
+                //去掉多余的空格和换行
+                if(node.type == 'text' && !dtd.$notTransContent[node.parent.tag]){
+                    node.data = node.data.replace(/[\r\t\n]*/g,'')//.replace(/[ ]*$/g,'')
+                }
+                return node;
+            }
+
+            return visitNode( node );
+        },
+        transformOutput: function ( node ) {
+            function visitNode( node ) {
+
+                if ( node.tag == 'hr' && node.attributes['class'] == 'pagebreak' ) {
+                    delete node.tag;
+                    node.type = 'text';
+                    node.data = me.options.pageBreakTag;
+                    delete node.children;
+
+                }
+                node = transOutNode( node );
+                node = childrenAccept( node, visitNode, node );
+                return node;
+            }
+
+            return visitNode( node );
+        },
+        toHTML: toHTML,
+        parseHTML: parseHTML,
+        word: UE.filterWord
+    };
+    me.serialize = new Serialize( me.options.serialize || {});
+    UE.serialize = new Serialize( {} );
+};
+///import core
 ///commands 撤销和重做
 ///commandsName  Undo,Redo
 ///commandsTitle  撤销,重做
@@ -10162,6 +10972,357 @@ UE.plugins['undo'] = function () {
     })
 };
 ///import core
+///import plugins/serialize.js
+///import plugins/undo.js
+///commands 查看源码
+///commandsName  Source
+///commandsTitle  查看源码
+(function (){
+    function SourceFormater(config){
+        config = config || {};
+        this.indentChar = config.indentChar || '    ';
+        this.breakChar = config.breakChar || '\n';
+        this.selfClosingEnd = config.selfClosingEnd || ' />';
+    }
+    var unhtml1 = function (){
+        var map = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+        function rep( m ){ return map[m]; }
+        return function ( str ) {
+            str = str + '';
+            return str ? str.replace( /[<>"']/g, rep ) : '';
+        };
+    }();
+    var inline = utils.extend({a:1,A:1},dtd.$inline,true);
+
+
+    function printAttrs(attrs){
+        var buff = [];
+        for (var k in attrs) {
+            buff.push(k + '="' + unhtml1(attrs[k]) + '"');
+        }
+        return buff.join(' ');
+    }
+    SourceFormater.prototype = {
+        format: function (html){
+            var node = UE.serialize.parseHTML(html);
+            this.buff = [];
+            this.indents = '';
+            this.indenting = 1;
+            this.visitNode(node);
+            return this.buff.join('');
+        },
+        visitNode: function (node){
+            if (node.type == 'fragment') {
+                this.visitChildren(node.children);
+            } else if (node.type == 'element') {
+                var selfClosing = dtd.$empty[node.tag];
+                this.visitTag(node.tag, node.attributes, selfClosing);
+
+                this.visitChildren(node.children);
+
+                if (!selfClosing) {
+                    this.visitEndTag(node.tag);
+                }
+            } else if (node.type == 'comment') {
+                this.visitComment(node.data);
+            } else {
+                this.visitText(node.data,dtd.$notTransContent[node.parent.tag]);
+            }
+        },
+        visitChildren: function (children){
+            for (var i=0; i<children.length; i++) {
+                this.visitNode(children[i]);
+            }
+        },
+        visitTag: function (tag, attrs, selfClosing){
+            if (this.indenting) {
+                this.indent();
+            } else if (!inline[tag]) { // todo: 去掉a, 因为dtd的inline里面没有a
+                this.newline();
+                this.indent();
+            }
+            this.buff.push('<', tag);
+            var attrPart = printAttrs(attrs);
+            if (attrPart) {
+                this.buff.push(' ', attrPart);
+            }
+            if (selfClosing) {
+                this.buff.push(this.selfClosingEnd);
+                if (tag == 'br') {
+                    this.newline();
+                }
+            } else {
+                this.buff.push('>');
+                this.indents += this.indentChar;
+            }
+            if (!inline[tag]) {
+                this.newline();
+            }
+        },
+        indent: function (){
+            this.buff.push(this.indents);
+            this.indenting = 0;
+        },
+        newline: function (){
+            this.buff.push(this.breakChar);
+            this.indenting = 1;
+        },
+        visitEndTag: function (tag){
+            
+            this.indents = this.indents.slice(0, -this.indentChar.length);
+            if (this.indenting) {
+                this.indent();
+            } else if (!inline[tag]) {
+                this.newline();
+                this.indent();
+            }
+            this.buff.push('</', tag, '>');
+        },
+        visitText: function (text,notTrans){
+            if (this.indenting) {
+                this.indent();
+            }
+      
+//            if(!notTrans){
+//                 text = text.replace(/&nbsp;/g, ' ').replace(/[ ][ ]+/g, function (m){
+//                    return new Array(m.length + 1).join('&nbsp;');
+//                }).replace(/(?:^ )|(?: $)/g, '&nbsp;');
+//            }
+            text = text.replace(/&nbsp;/g, ' ');
+            this.buff.push(text);
+
+        },
+        visitComment: function (text){
+            if (this.indenting) {
+                this.indent();
+            }
+            this.buff.push('<!--', text, '-->');
+        }
+    };
+
+    var sourceEditors = {
+        textarea: function (editor, holder){
+            var textarea = holder.ownerDocument.createElement('textarea');
+            textarea.style.cssText = 'position:absolute;resize:none;width:100%;height:100%;border:0;padding:0;margin:0;overflow-y:auto;';
+            // todo: IE下只有onresize属性可用... 很纠结
+            if (browser.ie && browser.version < 8) {
+                textarea.style.width = holder.offsetWidth + 'px';
+                textarea.style.height = holder.offsetHeight + 'px';
+                holder.onresize = function (){
+                    textarea.style.width = holder.offsetWidth + 'px';
+                    textarea.style.height = holder.offsetHeight + 'px';
+                };
+            }
+            holder.appendChild(textarea);
+            return {
+                setContent: function (content){
+                    textarea.value = content;
+                },
+                getContent: function (){
+                    return textarea.value;
+                },
+                select: function (){
+                    var range;
+                    if (browser.ie) {
+                        range = textarea.createTextRange();
+                        range.collapse(true);
+                        range.select();
+                    } else {
+                        //todo: chrome下无法设置焦点
+                        textarea.setSelectionRange(0, 0);
+                        textarea.focus();
+                    }
+                },
+                dispose: function (){
+                    holder.removeChild(textarea);
+                    // todo
+                    holder.onresize = null;
+                    textarea = null;
+                    holder = null;
+                }
+            };
+        },
+        codemirror: function (editor, holder){
+
+            var codeEditor = window.CodeMirror(holder, {
+                mode: "text/html",
+                tabMode: "indent",
+                lineNumbers: true,
+                lineWrapping:true
+            });
+            var dom = codeEditor.getWrapperElement();
+            dom.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;font-family:consolas,"Courier new",monospace;font-size:13px;';
+            codeEditor.getScrollerElement().style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;';
+            codeEditor.refresh();
+            return {
+                getCodeMirror:function(){
+                    return codeEditor;
+                },
+                setContent: function (content){
+                    codeEditor.setValue(content);
+                },
+                getContent: function (){
+                    return codeEditor.getValue();
+                },
+                select: function (){
+                    codeEditor.focus();
+                },
+                dispose: function (){
+                    holder.removeChild(dom);
+                    dom = null;
+                    codeEditor = null;
+                }
+            };
+        }
+    };
+
+    UE.plugins['source'] = function (){
+        var me = this;
+        var opt = this.options;
+        var formatter = new SourceFormater(opt.source);
+        var sourceMode = false;
+        var sourceEditor;
+
+        opt.sourceEditor = browser.ie  ? 'textarea' : (opt.sourceEditor || 'codemirror');
+
+        me.setOpt({
+            sourceEditorFirst:false
+        });
+        function createSourceEditor(holder){
+            return sourceEditors[opt.sourceEditor == 'codemirror' && window.CodeMirror ? 'codemirror' : 'textarea'](me, holder);
+        }
+
+        var bakCssText;
+        //解决在源码模式下getContent不能得到最新的内容问题
+        var oldGetContent = me.getContent,
+            bakAddress;
+
+        me.commands['source'] = {
+            execCommand: function (){
+
+                sourceMode = !sourceMode;
+                if (sourceMode) {
+                    bakAddress = me.selection.getRange().createAddress(false,true);
+                    me.undoManger && me.undoManger.save(true);
+                    if(browser.gecko){
+                        me.body.contentEditable = false;
+                    }
+
+                    bakCssText = me.iframe.style.cssText;
+                    me.iframe.style.cssText += 'position:absolute;left:-32768px;top:-32768px;';
+
+                    var content = formatter.format(me.hasContents() ? me.getContent() : '');
+
+                    sourceEditor = createSourceEditor(me.iframe.parentNode);
+
+                    sourceEditor.setContent(content);
+                    setTimeout(function (){
+                        sourceEditor.select();
+                        me.addListener('fullscreenchanged', function(){
+                            try{
+                                sourceEditor.getCodeMirror().refresh()
+                            }catch(e){}
+                        });
+                    });
+                    //重置getContent，源码模式下取值也能是最新的数据
+                    me.getContent = function (){
+                        var cont = sourceEditor.getContent() || '<p>' + (browser.ie ? '' : '<br/>')+'</p>';
+                        return cont.replace(/>[\n\r\t]+([ ]{4})+/g,'>').replace(/[\n\r\t]+([ ]{4})+</g,'<').replace(/>[\n\r\t]+</g,'><');
+                    };
+                } else {
+                    me.iframe.style.cssText = bakCssText;
+                    var cont = sourceEditor.getContent() || '<p>' + (browser.ie ? '' : '<br/>')+'</p>';
+                    cont = cont.replace(/>[\n\r\t]+([ ]{4})+/g,'>').replace(/[\n\r\t]+([ ]{4})+</g,'<').replace(/>[\n\r\t]+</g,'><');
+                    me.setContent(cont);
+                    sourceEditor.dispose();
+                    sourceEditor = null;
+                    //还原getContent方法
+                    me.getContent = oldGetContent;
+                    var first = me.body.firstChild;
+                    //trace:1106 都删除空了，下边会报错，所以补充一个p占位
+                    if(!first){
+                        me.body.innerHTML = '<p>'+(browser.ie?'':'<br/>')+'</p>';
+                        first = me.body.firstChild;
+                    }
+                    //要在ifm为显示时ff才能取到selection,否则报错
+                    //这里不能比较位置了
+                    me.undoManger && me.undoManger.save(true);
+
+                    if(browser.gecko){
+
+                        var input = document.createElement('input');
+                        input.style.cssText = 'position:absolute;left:0;top:-32768px';
+
+                        document.body.appendChild(input);
+
+                        me.body.contentEditable = false;
+                        setTimeout(function(){
+                            domUtils.setViewportOffset(input, { left: -32768, top: 0 });
+                            input.focus();
+                            setTimeout(function(){
+                                me.body.contentEditable = true;
+                                me.selection.getRange().moveToAddress(bakAddress).select();
+                                domUtils.remove(input);
+                            });
+
+                        });
+                    }else{
+                        //ie下有可能报错，比如在代码顶头的情况
+                        try{
+                            me.selection.getRange().moveToAddress(bakAddress).select();
+                        }catch(e){}
+
+                    }
+                }
+                this.fireEvent('sourcemodechanged', sourceMode);
+            },
+            queryCommandState: function (){
+                return sourceMode|0;
+            },
+            notNeedUndo : 1
+        };
+        var oldQueryCommandState = me.queryCommandState;
+
+        me.queryCommandState = function (cmdName){
+            cmdName = cmdName.toLowerCase();
+            if (sourceMode) {
+                //源码模式下可以开启的命令
+                return cmdName in {
+                    'source' : 1,
+                    'fullscreen' : 1
+                } ? 1 : -1
+            }
+            return oldQueryCommandState.apply(this, arguments);
+        };
+
+        if(opt.sourceEditor == "codemirror"){
+
+            me.addListener("ready",function(){
+                utils.loadFile(document,{
+                    src : opt.codeMirrorJsUrl || opt.UEDITOR_HOME_URL + "third-party/codemirror/codemirror.js",
+                    tag : "script",
+                    type : "text/javascript",
+                    defer : "defer"
+                },function(){
+                    if(opt.sourceEditorFirst){
+                        setTimeout(function(){
+                            me.execCommand("source");
+                        },0);
+                    }
+                });
+                utils.loadFile(document,{
+                    tag : "link",
+                    rel : "stylesheet",
+                    type : "text/css",
+                    href : opt.codeMirrorCssUrl || opt.UEDITOR_HOME_URL + "third-party/codemirror/codemirror.css"
+                });
+
+            });
+        }
+
+    };
+
+})();///import core
 ///commands 有序列表,无序列表
 ///commandsName  InsertOrderedList,InsertUnorderedList
 ///commandsTitle  有序列表,无序列表
@@ -11225,6 +12386,34 @@ UE.plugins['list'] = function () {
     };
 })();
 ///import core
+///commands 清空文档
+///commandsName  ClearDoc
+///commandsTitle  清空文档
+/**
+ *
+ * 清空文档
+ * @function
+ * @name baidu.editor.execCommand
+ * @param   {String}   cmdName     cleardoc清空文档
+ */
+
+UE.commands['cleardoc'] = {
+    execCommand : function( cmdName) {
+        var me = this,
+            enterTag = me.options.enterTag,
+            range = me.selection.getRange();
+        if(enterTag == "br"){
+            me.body.innerHTML = "<br/>";
+            range.setStart(me.body,0).setCursor();
+        }else{
+            me.body.innerHTML = "<p>"+(ie ? "" : "<br/>")+"</p>";
+            range.setStart(me.body.firstChild,0).setCursor(false,true);
+        }
+        me.fireEvent("clearDoc");
+    }
+};
+
+///import core
 ///commands 全选
 ///commandsName  SelectAll
 ///commandsTitle  全选
@@ -11299,6 +12488,23 @@ UE.plugins['selectall'] = function(){
          "selectAll" : "ctrl+65"
     });
 };
+///import core
+///commands 打印
+///commandsName  Print
+///commandsTitle  打印
+/**
+ * @description 打印
+ * @name baidu.editor.execCommand
+ * @param   {String}   cmdName     print打印编辑器内容
+ * @author zhanyi
+ */
+UE.commands['print'] = {
+    execCommand : function(){
+        this.window.print();
+    },
+    notNeedUndo : 1
+};
+
 ///import core
 ///commands 查找替换
 ///commandsName  SearchReplace
@@ -11468,6 +12674,133 @@ UE.commands['preview'] = {
     notNeedUndo : 1
 };
 ///import core
+///commands 添加分页功能
+///commandsName  PageBreak
+///commandsTitle  分页
+/**
+ * @description 添加分页功能
+ * @author zhanyi
+ */
+UE.plugins['pagebreak'] = function () {
+    var me = this,
+        notBreakTags = ['td'];
+
+    function fillNode(node){
+        if(domUtils.isEmptyBlock(node)){
+            var firstChild = node.firstChild,tmpNode;
+
+            while(firstChild && firstChild.nodeType == 1 && domUtils.isEmptyBlock(firstChild)){
+                tmpNode = firstChild;
+                firstChild = firstChild.firstChild;
+            }
+            !tmpNode && (tmpNode = node);
+            domUtils.fillNode(me.document,tmpNode);
+        }
+    }
+    //分页符样式添加
+
+    me.ready(function(){
+        utils.cssRule('pagebreak','.pagebreak{display:block;clear:both !important;cursor:default !important;width: 100% !important;margin:0;}',me.document);
+    });
+    function isHr(node){
+        return node && node.nodeType == 1 && node.tagName == 'HR' && node.className == 'pagebreak';
+    }
+    me.commands['pagebreak'] = {
+        execCommand:function () {
+            var range = me.selection.getRange(),hr = me.document.createElement('hr');
+            domUtils.setAttributes(hr,{
+                'class' : 'pagebreak',
+                noshade:"noshade",
+                size:"5"
+            });
+            domUtils.unSelectable(hr);
+            //table单独处理
+            var node = domUtils.findParentByTagName(range.startContainer, notBreakTags, true),
+
+                parents = [], pN;
+            if (node) {
+                switch (node.tagName) {
+                    case 'TD':
+                        pN = node.parentNode;
+                        if (!pN.previousSibling) {
+                            var table = domUtils.findParentByTagName(pN, 'table');
+//                            var tableWrapDiv = table.parentNode;
+//                            if(tableWrapDiv && tableWrapDiv.nodeType == 1
+//                                && tableWrapDiv.tagName == 'DIV'
+//                                && tableWrapDiv.getAttribute('dropdrag')
+//                                ){
+//                                domUtils.remove(tableWrapDiv,true);
+//                            }
+                            table.parentNode.insertBefore(hr, table);
+                            parents = domUtils.findParents(hr, true);
+
+                        } else {
+                            pN.parentNode.insertBefore(hr, pN);
+                            parents = domUtils.findParents(hr);
+
+                        }
+                        pN = parents[1];
+                        if (hr !== pN) {
+                            domUtils.breakParent(hr, pN);
+
+                        }
+                        //table要重写绑定一下拖拽
+                        me.fireEvent('afteradjusttable',me.document);
+                }
+
+            } else {
+
+                if (!range.collapsed) {
+                    range.deleteContents();
+                    var start = range.startContainer;
+                    while ( !domUtils.isBody(start) && domUtils.isBlockElm(start) && domUtils.isEmptyNode(start)) {
+                        range.setStartBefore(start).collapse(true);
+                        domUtils.remove(start);
+                        start = range.startContainer;
+                    }
+
+                }
+                range.insertNode(hr);
+
+                var pN = hr.parentNode, nextNode;
+                while (!domUtils.isBody(pN)) {
+                    domUtils.breakParent(hr, pN);
+                    nextNode = hr.nextSibling;
+                    if (nextNode && domUtils.isEmptyBlock(nextNode)) {
+                        domUtils.remove(nextNode);
+                    }
+                    pN = hr.parentNode;
+                }
+                nextNode = hr.nextSibling;
+                var pre = hr.previousSibling;
+                if(isHr(pre)){
+                    domUtils.remove(pre);
+                }else{
+                    pre && fillNode(pre);
+                }
+
+                if(!nextNode){
+                    var p = me.document.createElement('p');
+
+                    hr.parentNode.appendChild(p);
+                    domUtils.fillNode(me.document,p);
+                    range.setStart(p,0).collapse(true);
+                }else{
+                    if(isHr(nextNode)){
+                        domUtils.remove(nextNode);
+                    }else{
+                        fillNode(nextNode);
+                    }
+                    range.setEndAfter(hr).collapse(false);
+                }
+
+                range.select(true);
+
+            }
+
+        }
+    };
+};///import core
 /**
  * @description 插入内容
  * @name baidu.editor.execCommand
@@ -11811,6 +13144,253 @@ UE.commands['insertimage'] = {
         }
     }
 };///import core
+///commands 涂鸦
+///commandsName  Scrawl
+///commandsTitle  涂鸦
+///commandsDialog  dialogs\scrawl
+UE.commands['scrawl'] = {
+    queryCommandState : function(){
+        return ( browser.ie && browser.version  <= 8 ) ? -1 :0;
+    }
+};
+///import core
+///import plugins/inserthtml.js
+///commands 音乐
+///commandsName Music
+///commandsTitle  插入音乐
+///commandsDialog  dialogs\music
+UE.plugins['music'] = function () {
+    var me = this,
+        div;
+
+    /**
+     * 创建插入音乐字符窜
+     * @param url 音乐地址
+     * @param width 音乐宽度
+     * @param height 音乐高度
+     * @param align 阴雨对齐
+     * @param toEmbed 是否以flash代替显示
+     * @param addParagraph  是否需要添加P标签
+     */
+    function creatInsertStr(url,width,height,align,toEmbed,addParagraph){
+        return  !toEmbed ?
+            (addParagraph? ('<p '+ (align !="none" ? ( align == "center"? ' style="text-align:center;" ':' style="float:"'+ align ) : '') + '>'): '') +
+                '<img align="'+align+'" width="'+ width +'" height="' + height + '" _url="'+url+'" class="edui-faked-music"' +
+                ' src="'+me.options.langPath+me.options.lang+'/images/music.png" />' +
+                (addParagraph?'</p>':'')
+            :
+            '<embed type="application/x-shockwave-flash" class="edui-faked-music" pluginspage="http://www.macromedia.com/go/getflashplayer"' +
+                ' src="' + url + '" width="' + width  + '" height="' + height  + '" align="' + align + '"' +
+                ( align !="none" ? ' style= "'+ ( align == "center"? "display:block;":" float: "+ align )  + '"' :'' ) +
+                ' wmode="transparent" play="true" loop="false" menu="false" allowscriptaccess="never" allowfullscreen="true" >';
+    }
+
+    function switchImgAndEmbed(img2embed) {
+        var tmpdiv,
+            nodes = domUtils.getElementsByTagName(me.document, !img2embed ? "embed" : "img");
+        for (var i = 0, node; node = nodes[i++];) {
+            if (node.className != "edui-faked-music") {
+                continue;
+            }
+            tmpdiv = me.document.createElement("div");
+            //先看float在看align,浮动有的是时候是在float上定义的
+            var align = domUtils.getComputedStyle(node,'float');
+            align = align == 'none' ? (node.getAttribute('align') || '') : align;
+            tmpdiv.innerHTML = creatInsertStr(img2embed ? node.getAttribute("_url") : node.getAttribute("src"), node.width, node.height, align, img2embed);
+            node.parentNode.replaceChild(tmpdiv.firstChild, node);
+        }
+    }
+
+    me.addListener("beforegetcontent", function () {
+        switchImgAndEmbed(true);
+    });
+    me.addListener('aftersetcontent', function () {
+        switchImgAndEmbed(false);
+    });
+    me.addListener('aftergetcontent', function (cmdName) {
+        if (cmdName == 'aftergetcontent' && me.queryCommandState('source')) {
+            return;
+        }
+        switchImgAndEmbed(false);
+    });
+
+    me.commands["music"] = {
+        execCommand:function (cmd, musicObj) {
+            var me = this,
+                str = creatInsertStr(musicObj.url, musicObj.width || 400, musicObj.height || 95, "none", false, true);
+            me.execCommand("inserthtml",str);
+        },
+        queryCommandState:function () {
+            var me = this,
+                img = me.selection.getRange().getClosedNode(),
+                flag = img && (img.className == "edui-faked-music");
+            return flag ? 1 : 0;
+        }
+    };
+};///import core
+///import plugins\inserthtml.js
+///import plugins\image.js
+///commandsName  snapscreen
+///commandsTitle  截屏
+/**
+ * 截屏插件
+ */
+UE.plugins['snapscreen'] = function(){
+    var me = this,
+        doc,
+        snapplugin;
+    me.addListener("ready",function(){
+        var container = me.container;
+        doc = container.ownerDocument || container.document;
+        snapplugin = doc.createElement("object");
+        snapplugin.type = "application/x-pluginbaidusnap";
+        snapplugin.style.cssText = "position:absolute;left:-9999px;";
+        snapplugin.setAttribute("width","0");
+        snapplugin.setAttribute("height","0");
+        container.appendChild(snapplugin);
+    });
+    me.commands['snapscreen'] = {
+        execCommand: function(){
+            var me = this,lang = me.getLang("snapScreen_plugin");
+            me.setOpt({
+                  snapscreenServerPort: 80                                    //屏幕截图的server端端口
+                 ,snapscreenImgAlign: ''                                //截图的图片默认的排版方式
+           });
+           var editorOptions = me.options;
+
+            var onSuccess = function(rs){
+                try{
+                    rs = eval("("+ rs +")");
+                }catch(e){
+                    alert(lang.callBackErrorMsg);
+                    return;
+                }
+
+                if(rs.state != 'SUCCESS'){
+                    alert(rs.state);
+                    return;
+                }
+                me.execCommand('insertimage', {
+                    src: editorOptions.snapscreenPath + rs.url,
+                    floatStyle: editorOptions.snapscreenImgAlign,
+                    data_ue_src:editorOptions.snapscreenPath + rs.url
+                });
+            };
+            var onStartUpload = function(){
+                //开始截图上传
+            };
+            var onError = function(){
+                alert(lang.uploadErrorMsg);
+            };
+            try{
+                var ret =snapplugin.saveSnapshot(editorOptions.snapscreenHost, editorOptions.snapscreenServerUrl, editorOptions.snapscreenServerPort.toString());
+                onSuccess(ret);
+            }catch(e){
+                me.ui._dialogs['snapscreenDialog'].open();
+            }
+        },
+        queryCommandState: function(){
+            return this.highlight ? -1 :0;
+        }
+    };
+}
+
+///import core
+///import plugins/inserthtml.js
+///commands 视频
+///commandsName InsertVideo
+///commandsTitle  插入视频
+///commandsDialog  dialogs\video
+UE.plugins['video'] = function (){
+    var me =this,
+        div;
+
+    /**
+     * 创建插入视频字符窜
+     * @param url 视频地址
+     * @param width 视频宽度
+     * @param height 视频高度
+     * @param align 视频对齐
+     * @param toEmbed 是否以flash代替显示
+     * @param addParagraph  是否需要添加P 标签
+     */
+    function creatInsertStr(url,width,height,align,toEmbed,addParagraph){
+        return  !toEmbed ?
+                (addParagraph? ('<p '+ (align && align !="none" ? ( align == "center"? ' style="text-align:center;" ':' style="float:"'+ align ) : '') + '>'): '') +
+                '<img align="'+align+'" width="'+ width +'" height="' + height + '" _url="'+url+'" class="edui-faked-video"' +
+                ' src="' + me.options.UEDITOR_HOME_URL+'themes/default/images/spacer.gif" style="background:url('+me.options.UEDITOR_HOME_URL+'themes/default/images/videologo.gif) no-repeat center center; border:1px solid gray;" />' +
+                (addParagraph?'</p>':'')
+                :
+                '<embed type="application/x-shockwave-flash" class="edui-faked-video" pluginspage="http://www.macromedia.com/go/getflashplayer"' +
+                ' src="' + url + '" width="' + width  + '" height="' + height  + '" align="' + align + '"' +
+                ( align && align !="none" ? ' style= "'+ ( align == "center"? "display:block;":" float: "+ align )  + '"' :'' ) +
+                ' wmode="transparent" play="true" loop="false" menu="false" allowscriptaccess="never" allowfullscreen="true" >';
+    }
+
+    function switchImgAndEmbed(img2embed){
+        var tmpdiv,
+            nodes =domUtils.getElementsByTagName(me.document, !img2embed ? "embed" : "img");
+        for(var i=0,node;node = nodes[i++];){
+            if(node.className!="edui-faked-video"){
+                continue;
+            }
+            tmpdiv = me.document.createElement("div");
+            //先看float在看align,浮动有的是时候是在float上定义的
+            var align = domUtils.getComputedStyle(node,'float');
+            align = align == 'none' ? (node.getAttribute('align') || '') : align;
+            tmpdiv.innerHTML = creatInsertStr(img2embed ? node.getAttribute("_url"):node.getAttribute("src"),node.width,node.height,align,img2embed);
+            node.parentNode.replaceChild(tmpdiv.firstChild,node);
+        }
+    }
+    me.addListener("beforegetcontent",function(){
+        switchImgAndEmbed(true);
+    });
+    me.addListener('aftersetcontent',function(){
+        switchImgAndEmbed(false);
+    });
+    me.addListener('aftergetcontent',function(cmdName){
+        if(cmdName == 'aftergetcontent' && me.queryCommandState('source')){
+            return;
+        }
+        switchImgAndEmbed(false);
+    });
+
+    me.commands["insertvideo"] = {
+        execCommand: function (cmd, videoObjs){
+            videoObjs = utils.isArray(videoObjs)?videoObjs:[videoObjs];
+            var html = [];
+            for(var i=0,vi,len = videoObjs.length;i<len;i++){
+                 vi = videoObjs[i];
+                 html.push(creatInsertStr( vi.url, vi.width || 420,  vi.height || 280, vi.align||"none",false,true));
+            }
+            me.execCommand("inserthtml",html.join(""));
+        },
+        queryCommandState : function(){
+            var img = me.selection.getRange().getClosedNode(),
+                flag = img && (img.className == "edui-faked-video");
+            return flag ? 1 : 0;
+        }
+    };
+};///import core
+///import plugins\inserthtml.js
+///commands 插入框架
+///commandsName  InsertFrame
+///commandsTitle  插入Iframe
+///commandsDialog  dialogs\insertframe
+
+UE.plugins['insertframe'] = function() {
+   var me =this;
+    function deleteIframe(){
+        me._iframe && delete me._iframe;
+    }
+
+    me.addListener("selectionchange",function(){
+        deleteIframe();
+    });
+
+};
+
+///import core
 ///import plugins\inserthtml.js
 ///commands 日期,时间
 ///commandsName  Date,Time
@@ -11840,6 +13420,87 @@ UE.commands['time'] = UE.commands["date"] = {
 
 
 
+///import core
+///commands 本地图片引导上传
+///commandsName  WordImage
+///commandsTitle  本地图片引导上传
+///commandsDialog  dialogs\wordimage
+
+
+UE.plugins["wordimage"] = function(){
+    var me = this,
+        images;
+    me.commands['wordimage'] = {
+        execCommand : function() {
+            images = domUtils.getElementsByTagName(me.document.body,"img");
+            var urlList = [];
+            for(var i=0,ci;ci=images[i++];){
+                var url=ci.getAttribute("word_img");
+                url && urlList.push(url);
+            }
+            if(images.length){
+                this["word_img"] = urlList;
+            }
+        },
+        queryCommandState: function(){
+            images = domUtils.getElementsByTagName(me.document.body,"img");
+            for(var i=0,ci;ci =images[i++];){
+                if(ci.getAttribute("word_img")){
+                    return 1;
+                }
+            }
+            return -1;
+        }
+    };
+};///import core
+///import plugins/inserthtml.js
+///commands 百度应用
+///commandsName webapp
+///commandsTitle  百度应用
+///commandsDialog  dialogs\webapp
+UE.plugins['webapp'] = function () {
+    var me = this;
+    function createInsertStr( obj, toIframe, addParagraph ) {
+        return !toIframe ?
+                (addParagraph ? '<p>' : '') + '<img title="'+obj.title+'" width="' + obj.width + '" height="' + obj.height + '"' +
+                        ' src="' + me.options.UEDITOR_HOME_URL + 'themes/default/images/spacer.gif" style="background:url(' + obj.logo+') no-repeat center center; border:1px solid gray;" class="edui-faked-webapp" _url="' + obj.url + '" />' +
+                        (addParagraph ? '</p>' : '')
+                :
+                '<iframe class="edui-faked-webapp" title="'+obj.title+'" width="' + obj.width + '" height="' + obj.height + '"  scrolling="no" frameborder="0" src="' + obj.url + '" logo_url = '+obj.logo+'></iframe>';
+    }
+
+    function switchImgAndIframe( img2frame ) {
+        var tmpdiv,
+                nodes = domUtils.getElementsByTagName( me.document, !img2frame ? "iframe" : "img" );
+        for ( var i = 0, node; node = nodes[i++]; ) {
+            if ( node.className != "edui-faked-webapp" ){
+                continue;
+            }
+            tmpdiv = me.document.createElement( "div" );
+            tmpdiv.innerHTML = createInsertStr( img2frame ? {url:node.getAttribute( "_url" ), width:node.width, height:node.height,title:node.title,logo:node.style.backgroundImage.replace("url(","").replace(")","")} : {url:node.getAttribute( "src", 2 ),title:node.title, width:node.width, height:node.height,logo:node.getAttribute("logo_url")}, img2frame ? true : false,false );
+            node.parentNode.replaceChild( tmpdiv.firstChild, node );
+        }
+    }
+
+    me.addListener( "beforegetcontent", function () {
+        switchImgAndIframe( true );
+    } );
+    me.addListener( 'aftersetcontent', function () {
+        switchImgAndIframe( false );
+    } );
+    me.addListener( 'aftergetcontent', function ( cmdName ) {
+        if ( cmdName == 'aftergetcontent' && me.queryCommandState( 'source' ) ){
+            return;
+        }
+        switchImgAndIframe( false );
+    } );
+
+    me.commands['webapp'] = {
+        execCommand:function ( cmd, obj ) {
+            me.execCommand( "inserthtml", createInsertStr( obj, false,true ) );
+        }
+    };
+};
 ///import core
 ///import plugins\inserthtml.js
 ///commands 分割线
@@ -11885,6 +13546,439 @@ UE.commands['horizontal'] = {
     queryCommandState : function() {
         return domUtils.filterNodeList(this.selection.getStartElementPath(),'table') ? -1 : 0;
     }
+};
+///import core
+///commands 锚点
+///commandsName  Anchor
+///commandsTitle  锚点
+///commandsDialog  dialogs\anchor
+/**
+ * 锚点
+ * @function
+ * @name baidu.editor.execCommands
+ * @param {String} cmdName     cmdName="anchor"插入锚点
+ */
+UE.plugins['anchor'] = function (){
+    var me = this;
+
+    me.ready(function(){
+        utils.cssRule('anchor',
+            '.anchorclass{background: url(\'' + me.options.UEDITOR_HOME_URL + 'themes/default/images/anchor.gif\') no-repeat scroll left center transparent;border: 1px dotted #0000FF;cursor: auto;display: inline-block;height: 16px;width: 15px;}',me.document)
+    });
+
+    me.commands['anchor'] = {
+        execCommand:function (cmd, name) {
+            var range = this.selection.getRange(),img = range.getClosedNode();
+            if (img && img.getAttribute('anchorname')) {
+                if (name) {
+                    img.setAttribute('anchorname', name);
+                } else {
+                    range.setStartBefore(img).setCursor();
+                    domUtils.remove(img);
+                }
+            } else {
+                if (name) {
+                    //只在选区的开始插入
+                    var anchor = this.document.createElement('img');
+                    range.collapse(true);
+                    domUtils.setAttributes(anchor,{
+                        'anchorname':name,
+                        'class':'anchorclass'
+                    });
+                    range.insertNode(anchor).setStartAfter(anchor).setCursor(false,true);
+                }
+            }
+        }
+
+    };
+
+
+};
+///import core
+///commands 引用
+///commandsName  BlockQuote
+///commandsTitle  引用
+/**
+ * 
+ * 引用模块实现
+ * @function
+ * @name baidu.editor.execCommand
+ * @param   {String}   cmdName     blockquote引用
+ */
+
+
+UE.plugins['blockquote'] = function(){
+    var me = this;
+    function getObj(editor){
+        return domUtils.filterNodeList(editor.selection.getStartElementPath(),'blockquote');
+    };
+    me.commands['blockquote'] = {
+        execCommand : function( cmdName, attrs ) {
+            var range = this.selection.getRange(),
+                obj = getObj(this),
+                blockquote = dtd.blockquote,
+                bookmark = range.createBookmark();
+
+            if ( obj ) {
+
+
+                    var start = range.startContainer,
+                        startBlock = domUtils.isBlockElm(start) ? start : domUtils.findParent(start,function(node){return domUtils.isBlockElm(node)}),
+
+                        end = range.endContainer,
+                        endBlock = domUtils.isBlockElm(end) ? end :  domUtils.findParent(end,function(node){return domUtils.isBlockElm(node)});
+
+                    //处理一下li
+                    startBlock = domUtils.findParentByTagName(startBlock,'li',true) || startBlock;
+                    endBlock = domUtils.findParentByTagName(endBlock,'li',true) || endBlock;
+
+
+                    if(startBlock.tagName == 'LI' || startBlock.tagName == 'TD' || startBlock === obj){
+                        domUtils.remove(obj,true);
+                    }else{
+                        domUtils.breakParent(startBlock,obj);
+                    }
+
+                    if(startBlock !== endBlock){
+                        obj = domUtils.findParentByTagName(endBlock,'blockquote');
+                        if(obj){
+                            if(endBlock.tagName == 'LI' || endBlock.tagName == 'TD'){
+                                domUtils.remove(obj,true);
+                            }else{
+                                domUtils.breakParent(endBlock,obj);
+                            }
+
+                        }
+                    }
+
+                    var blockquotes = domUtils.getElementsByTagName(this.document,'blockquote');
+                    for(var i=0,bi;bi=blockquotes[i++];){
+                        if(!bi.childNodes.length){
+                            domUtils.remove(bi);
+                        }else if(domUtils.getPosition(bi,startBlock)&domUtils.POSITION_FOLLOWING && domUtils.getPosition(bi,endBlock)&domUtils.POSITION_PRECEDING){
+                            domUtils.remove(bi,true);
+                        }
+                    }
+
+
+
+
+            } else {
+
+                var tmpRange = range.cloneRange(),
+                    node = tmpRange.startContainer.nodeType == 1 ? tmpRange.startContainer : tmpRange.startContainer.parentNode,
+                    preNode = node,
+                    doEnd = 1;
+
+                //调整开始
+                while ( 1 ) {
+                    if ( domUtils.isBody(node) ) {
+                        if ( preNode !== node ) {
+                            if ( range.collapsed ) {
+                                tmpRange.selectNode( preNode );
+                                doEnd = 0;
+                            } else {
+                                tmpRange.setStartBefore( preNode );
+                            }
+                        }else{
+                            tmpRange.setStart(node,0);
+                        }
+
+                        break;
+                    }
+                    if ( !blockquote[node.tagName] ) {
+                        if ( range.collapsed ) {
+                            tmpRange.selectNode( preNode );
+                        } else{
+                            tmpRange.setStartBefore( preNode);
+                        }
+                        break;
+                    }
+
+                    preNode = node;
+                    node = node.parentNode;
+                }
+
+                //调整结束
+                if ( doEnd ) {
+                    preNode = node =  node = tmpRange.endContainer.nodeType == 1 ? tmpRange.endContainer : tmpRange.endContainer.parentNode;
+                    while ( 1 ) {
+
+                        if ( domUtils.isBody( node ) ) {
+                            if ( preNode !== node ) {
+
+                                tmpRange.setEndAfter( preNode );
+
+                            } else {
+                                tmpRange.setEnd( node, node.childNodes.length );
+                            }
+
+                            break;
+                        }
+                        if ( !blockquote[node.tagName] ) {
+                            tmpRange.setEndAfter( preNode );
+                            break;
+                        }
+
+                        preNode = node;
+                        node = node.parentNode;
+                    }
+
+                }
+
+
+                node = range.document.createElement( 'blockquote' );
+                domUtils.setAttributes( node, attrs );
+                node.appendChild( tmpRange.extractContents() );
+                tmpRange.insertNode( node );
+                //去除重复的
+                var childs = domUtils.getElementsByTagName(node,'blockquote');
+                for(var i=0,ci;ci=childs[i++];){
+                    if(ci.parentNode){
+                        domUtils.remove(ci,true);
+                    }
+                }
+
+            }
+            range.moveToBookmark( bookmark ).select();
+        },
+        queryCommandState : function() {
+            return getObj(this) ? 1 : 0;
+        }
+    };
+};
+
+///import core
+///import plugins/inserthtml.js
+///commands 插入代码
+///commandsName  HighlightCode
+///commandsTitle  插入代码
+///commandsDialog  dialogs\highlightcode
+UE.plugins['highlightcode'] = function() {
+    var me = this;
+    if(!/highlightcode/i.test(me.options.toolbars.join(''))){
+        return;
+    }
+
+    me.commands['highlightcode'] = {
+        execCommand: function (cmdName, code, syntax) {
+            var range = this.selection.getRange(),
+                start = domUtils.findParentByTagName(range.startContainer, 'table', true),
+                end = domUtils.findParentByTagName(range.endContainer, 'table', true);
+            if(start && end && start === end && domUtils.hasClass(start,'syntaxhighlighter')){
+                if(start.nextSibling){
+                    range.setStart(start.nextSibling,0)
+                }else{
+                    if(start.previousSibling){
+                        range.setStartAtLast(start.previousSibling)
+                    }else{
+                        var p = me.document.createElement('p');
+                        domUtils.fillNode(me.document,p);
+                        start.parentNode.insertBefore(p,start);
+                        range.setStart(p,0)
+                    }
+                }
+                range.setCursor(false,true);
+                domUtils.remove(start);
+            }
+            if(code && syntax){
+                me.execCommand('inserthtml','<pre id="highlightcode_id" class="brush: '+syntax+';toolbar:false;">'+utils.unhtml(code)+'</pre>',true);
+                var pre = me.document.getElementById('highlightcode_id');
+                if(pre){
+                    domUtils.removeAttributes(pre,'id');
+                    me.window.SyntaxHighlighter.highlight(pre);
+                }
+            }
+
+        },
+        queryCommandState: function(){
+            return queryHighlight.call(this);
+        }
+    };
+
+    function queryHighlight(){
+        try{
+            var range = this.selection.getRange(),start,end;
+            range.adjustmentBoundary();
+            start = domUtils.findParent(range.startContainer,function(node){
+                return node.nodeType == 1 && node.tagName == 'TABLE' && domUtils.hasClass(node,'syntaxhighlighter');
+            },true);
+            end = domUtils.findParent(range.endContainer,function(node){
+                return node.nodeType == 1 && node.tagName == 'TABLE' && domUtils.hasClass(node,'syntaxhighlighter');
+            },true);
+            return start && end && start == end  ? 1 : 0;
+        }catch(e){
+            return 0;
+        }
+    }
+
+    //不需要判断highlight的command列表
+    me.notNeedHighlightQuery ={
+        help:1,
+        undo:1,
+        redo:1,
+        source:1,
+        print:1,
+        searchreplace:1,
+        fullscreen:1,
+        preview:1,
+        insertparagraph:1,
+        elementpath:1,
+        highlightcode:1
+    };
+    //将queyCommamndState重置
+    var orgQuery = me.queryCommandState;
+    me.queryCommandState = function(cmd){
+        if(!me.notNeedHighlightQuery[cmd.toLowerCase()] && queryHighlight.call(this) == 1){
+            return -1;
+        }
+        return orgQuery.apply(this,arguments)
+    };
+
+    me.addListener('beforeselectionchange afterselectionchange',function(type){
+        me.highlight = /^b/.test(type) ? me.queryCommandState('highlightcode') : 0;
+    });
+
+
+    me.addListener("ready",function(){
+        //避免重复加载高亮文件
+        if(typeof me.XRegExp == "undefined"){
+            utils.loadFile(me.document,{
+                id : "syntaxhighlighter_js",
+                src : me.options.highlightJsUrl || me.options.UEDITOR_HOME_URL + "third-party/SyntaxHighlighter/shCore.js",
+                tag : "script",
+                type : "text/javascript",
+                defer : "defer"
+            },function(){
+                changePre.call(me);
+            });
+        }
+        if(!me.document.getElementById("syntaxhighlighter_css")){
+            utils.loadFile(me.document,{
+                id : "syntaxhighlighter_css",
+                tag : "link",
+                rel : "stylesheet",
+                type : "text/css",
+                href : me.options.highlightCssUrl ||me.options.UEDITOR_HOME_URL + "third-party/SyntaxHighlighter/shCoreDefault.css"
+            });
+        }
+
+    });
+    me.addListener("beforegetcontent beforegetscene",function(){
+        utils.each(domUtils.getElementsByTagName(me.body,'table','syntaxhighlighter'),function(di){
+            var str = [],parentCode = '';
+            utils.each(di.getElementsByTagName('code'),function(ci){
+                if(parentCode !== ci.parentNode){
+                    parentCode = ci.parentNode;
+                    //去掉左右空格，针对ie的不能回退的问题
+                    str.push(utils.trim(parentCode[browser.ie?'innerText':'textContent']))
+                }
+
+            });
+            var pre = domUtils.createElement(me.document,'pre',{
+                'class' : 'brush: '+di.className.replace(/\s+/g,' ').split(' ')[1]+';toolbar:false;'
+            });
+            pre.appendChild(me.document.createTextNode(str.join('\n')));
+            di.parentNode.replaceChild(pre,di);
+        });
+    });
+    me.addListener("aftergetcontent aftersetcontent aftergetscene",changePre);
+
+
+    //避免table插件对于代码高亮的影响
+    me.addListener('excludetable excludeNodeinautotype',function (cmd,target){
+        if(target && domUtils.findParent(target,function(node){
+            return domUtils.hasClass(node,'syntaxhighlighter');
+        },true)){
+            return true;
+        }
+    });
+
+    function changePre(){
+        var me = this;
+        if(!me.window||!me.window.SyntaxHighlighter)return;
+        utils.each(domUtils.getElementsByTagName(me.document,"pre"),function(pi){
+            if(domUtils.hasClass(pi,'brush')){
+                me.window.SyntaxHighlighter.highlight(pi);
+            }
+        });
+    }
+
+    me.addListener('getAllHtml',function(type,headHtml){
+        var coreHtml = '';
+        for(var i= 0,ci,divs=domUtils.getElementsByTagName(me.document,'table');ci=divs[i++];){
+            if(domUtils.hasClass(ci,'syntaxhighlighter')){
+                coreHtml = '<script type="text/javascript">window.onload = function(){SyntaxHighlighter.highlight();' +
+                    'setTimeout(function(){ '+
+                     "   var tables = document.getElementsByTagName('table');"+
+                     "   for(var t= 0,ti;ti=tables[t++];){"+
+                     "       if(/SyntaxHighlighter/i.test(ti.className)){"+
+                     "           var tds = ti.getElementsByTagName('td');"+
+                     "           for(var i=0,li,ri;li=tds[0].childNodes[i];i++){"+
+                     "               ri = tds[1].firstChild.childNodes[i];"+
+                     "               if(ri){"+
+                     "                  ri.style.height = li.style.height = ri.offsetHeight + 'px';"+
+                     "               }"+
+                     "           }"+
+                     "       }"+
+                     "   }"+
+                    '},100)' +
+                    '}</script>'
+                break;
+            }
+        }
+        if(!coreHtml){
+            var tmpNode;
+            if(tmpNode = me.document.getElementById('syntaxhighlighter_css')){
+                domUtils.remove(tmpNode)
+            }
+            if(tmpNode = me.document.getElementById('syntaxhighlighter_js')){
+                domUtils.remove(tmpNode)
+
+            }
+        }
+        coreHtml && headHtml.push(coreHtml)
+    });
+
+};
+///import core
+///import plugins\inserthtml.js
+///import plugins\cleardoc.js
+///commands 模板
+///commandsName  template
+///commandsTitle  模板
+///commandsDialog  dialogs\template
+UE.plugins['template'] = function () {
+    UE.commands['template'] = {
+        execCommand:function (cmd, obj) {
+            obj.html && this.execCommand("inserthtml", obj.html);
+        }
+    };
+    this.addListener("click", function (type, evt) {
+        var el = evt.target || evt.srcElement,
+            range = this.selection.getRange();
+        var tnode = domUtils.findParent(el, function (node) {
+            if (node.className && domUtils.hasClass(node, "ue_t")) {
+                return node;
+            }
+        }, true);
+        tnode && range.selectNode(tnode).shrinkBoundary().select();
+    });
+    this.addListener("keydown", function (type, evt) {
+        var range = this.selection.getRange();
+        if (!range.collapsed) {
+            if (!evt.ctrlKey && !evt.metaKey && !evt.shiftKey && !evt.altKey) {
+                var tnode = domUtils.findParent(range.startContainer, function (node) {
+                    if (node.className && domUtils.hasClass(node, "ue_t")) {
+                        return node;
+                    }
+                }, true);
+                if (tnode) {
+                    domUtils.removeClasses(tnode, ["ue_t"]);
+                }
+            }
+        }
+    });
 };
 ///import core
 ///commands 插入背景
@@ -12471,6 +14565,109 @@ UE.commands['tolowercase'] = {
 };
 
 ///import core
+///commands 输入的方向
+///commandsName  DirectionalityLtr,DirectionalityRtl
+///commandsTitle  从左向右输入,从右向左输入
+/**
+ * 输入的方向
+ * @function
+ * @name baidu.editor.execCommand
+ * @param {String}   cmdName    directionality执行函数的参数
+ * @param {String}    forward    ltr从左向右输入，rtl从右向左输入
+ */
+(function() {
+    var block = domUtils.isBlockElm ,
+        getObj = function(editor){
+//            var startNode = editor.selection.getStart(),
+//                parents;
+//            if ( startNode ) {
+//                //查找所有的是block的父亲节点
+//                parents = domUtils.findParents( startNode, true, block, true );
+//                for ( var i = 0,ci; ci = parents[i++]; ) {
+//                    if ( ci.getAttribute( 'dir' ) ) {
+//                        return ci;
+//                    }
+//                }
+//            }
+            return domUtils.filterNodeList(editor.selection.getStartElementPath(),function(n){return n.getAttribute('dir')});
+
+        },
+        doDirectionality = function(range,editor,forward){
+            
+            var bookmark,
+                filterFn = function( node ) {
+                    return   node.nodeType == 1 ? !domUtils.isBookmarkNode(node) : !domUtils.isWhitespace(node);
+                },
+
+                obj = getObj( editor );
+
+            if ( obj && range.collapsed ) {
+                obj.setAttribute( 'dir', forward );
+                return range;
+            }
+            bookmark = range.createBookmark();
+            range.enlarge( true );
+            var bookmark2 = range.createBookmark(),
+                current = domUtils.getNextDomNode( bookmark2.start, false, filterFn ),
+                tmpRange = range.cloneRange(),
+                tmpNode;
+            while ( current &&  !(domUtils.getPosition( current, bookmark2.end ) & domUtils.POSITION_FOLLOWING) ) {
+                if ( current.nodeType == 3 || !block( current ) ) {
+                    tmpRange.setStartBefore( current );
+                    while ( current && current !== bookmark2.end && !block( current ) ) {
+                        tmpNode = current;
+                        current = domUtils.getNextDomNode( current, false, null, function( node ) {
+                            return !block( node );
+                        } );
+                    }
+                    tmpRange.setEndAfter( tmpNode );
+                    var common = tmpRange.getCommonAncestor();
+                    if ( !domUtils.isBody( common ) && block( common ) ) {
+                        //遍历到了block节点
+                        common.setAttribute( 'dir', forward );
+                        current = common;
+                    } else {
+                        //没有遍历到，添加一个block节点
+                        var p = range.document.createElement( 'p' );
+                        p.setAttribute( 'dir', forward );
+                        var frag = tmpRange.extractContents();
+                        p.appendChild( frag );
+                        tmpRange.insertNode( p );
+                        current = p;
+                    }
+
+                    current = domUtils.getNextDomNode( current, false, filterFn );
+                } else {
+                    current = domUtils.getNextDomNode( current, true, filterFn );
+                }
+            }
+            return range.moveToBookmark( bookmark2 ).moveToBookmark( bookmark );
+        };
+    UE.commands['directionality'] = {
+        execCommand : function( cmdName,forward ) {
+            var range = this.selection.getRange();
+            //闭合时单独处理
+            if(range.collapsed){
+                var txt = this.document.createTextNode('d');
+                range.insertNode(txt);
+            }
+            doDirectionality(range,this,forward);
+            if(txt){
+                range.setStartBefore(txt).collapse(true);
+                domUtils.remove(txt);
+            }
+
+            range.select();
+            return true;
+        },
+        queryCommandValue : function() {
+            var node = getObj(this);
+            return node ? node.getAttribute('dir') : 'ltr';
+        }
+    };
+})();
+
+///import core
 ///commands 格式
 ///commandsName  Paragraph
 ///commandsTitle  段落格式
@@ -12772,815 +14969,257 @@ UE.plugins['formatmatch'] = function(){
 };
 
 ///import core
-///commands 定制过滤规则
-///commandsName  Serialize
-///commandsTitle  定制过滤规则
-UE.plugins['serialize'] = function () {
-    var ie = browser.ie,
-        version = browser.version;
+///commands 自动排版
+///commandsName  autotypeset
+///commandsTitle  自动排版
+/**
+ * 自动排版
+ * @function
+ * @name baidu.editor.execCommands
+ */
 
-    function ptToPx(value){
-        return /pt/.test(value) ? value.replace( /([\d.]+)pt/g, function( str ) {
-            return  Math.round(parseFloat(str) * 96 / 72) + "px";
-        } ) : value;
+UE.plugins['autotypeset'] = function(){
+
+    this.setOpt({'autotypeset':{
+        mergeEmptyline : true,          //合并空行
+            removeClass : true,            //去掉冗余的class
+            removeEmptyline : false,        //去掉空行
+            textAlign : "left",             //段落的排版方式，可以是 left,right,center,justify 去掉这个属性表示不执行排版
+            imageBlockLine : 'center',      //图片的浮动方式，独占一行剧中,左右浮动，默认: center,left,right,none 去掉这个属性表示不执行排版
+            pasteFilter : false,             //根据规则过滤没事粘贴进来的内容
+            clearFontSize : false,           //去掉所有的内嵌字号，使用编辑器默认的字号
+            clearFontFamily : false,         //去掉所有的内嵌字体，使用编辑器默认的字体
+            removeEmptyNode : false,         // 去掉空节点
+            //可以去掉的标签
+            removeTagNames : utils.extend({div:1},dtd.$removeEmpty),
+            indent : false,                  // 行首缩进
+            indentValue : '2em'             //行首缩进的大小
+    }});
+    var me = this,
+        opt = me.options.autotypeset,
+        remainClass = {
+            'selectTdClass':1,
+            'pagebreak':1,
+            'anchorclass':1
+        },
+        remainTag = {
+            'li':1
+        },
+        tags = {
+            div:1,
+            p:1,
+            //trace:2183 这些也认为是行
+            blockquote:1,center:1,h1:1,h2:1,h3:1,h4:1,h5:1,h6:1,
+            span:1
+        },
+        highlightCont;
+    //升级了版本，但配置项目里没有autotypeset
+    if(!opt){
+        return;
     }
-    var me = this, autoClearEmptyNode = me.options.autoClearEmptyNode,
-        EMPTY_TAG = dtd.$empty,
-        parseHTML = function () {
-            //干掉<a> 后便变得空格，保留</a>  这样的空格
-            var RE_PART = /<(?:(?:\/([^>]+)>)|(?:!--([\S|\s]*?)-->)|(?:([^\s\/>]+)\s*((?:(?:"[^"]*")|(?:'[^']*')|[^"'<>])*)\/?>))/g,
-                RE_ATTR = /([\w\-:.]+)(?:(?:\s*=\s*(?:(?:"([^"]*)")|(?:'([^']*)')|([^\s>]+)))|(?=\s|$))/g,
-                EMPTY_ATTR = {checked:1,compact:1,declare:1,defer:1,disabled:1,ismap:1,multiple:1,nohref:1,noresize:1,noshade:1,nowrap:1,readonly:1,selected:1},
-                CDATA_TAG = {script:1,style: 1},
-                NEED_PARENT_TAG = {
-                    "li": { "$": 'ul', "ul": 1, "ol": 1 },
-                    "dd": { "$": "dl", "dl": 1 },
-                    "dt": { "$": "dl", "dl": 1 },
-                    "option": { "$": "select", "select": 1 },
-                    "td": { "$": "tr", "tr": 1 },
-                    "th": { "$": "tr", "tr": 1 },
-                    "tr": { "$": "tbody", "tbody": 1, "thead": 1, "tfoot": 1, "table": 1 },
-                    "tbody": { "$": "table", 'table':1,"colgroup": 1 },
-                    "thead": { "$": "table", "table": 1 },
-                    "tfoot": { "$": "table", "table": 1 },
-                    "col": { "$": "colgroup","colgroup":1 }
-                };
-            var NEED_CHILD_TAG = {
-                "table": "td", "tbody": "td", "thead": "td", "tfoot": "td", //"tr": "td",
-                "colgroup": "col",
-                "ul": "li", "ol": "li",
-                "dl": "dd",
-                "select": "option"
-            };
+    function isLine(node,notEmpty){
+        if(!node || node.nodeType == 3)
+            return 0;
+        if(domUtils.isBr(node))
+            return 1;
+        if(node && node.parentNode && tags[node.tagName.toLowerCase()]){
+            if(highlightCont && highlightCont.contains(node)
+                ||
+                node.getAttribute('pagebreak')
+            ){
+                return 0;
+            }
 
-            function parse( html, callbacks ) {
+            return notEmpty ? !domUtils.isEmptyBlock(node) : domUtils.isEmptyBlock(node);
+        }
+    }
 
-                var match,
-                    nextIndex = 0,
-                    tagName,
-                    cdata;
-                RE_PART.exec( "" );
-                while ( (match = RE_PART.exec( html )) ) {
+    function removeNotAttributeSpan(node){
+        if(!node.style.cssText){
+            domUtils.removeAttributes(node,['style']);
+            if(node.tagName.toLowerCase() == 'span' && domUtils.hasNoAttributes(node)){
+                domUtils.remove(node,true);
+            }
+        }
+    }
+    function autotype(type,html){
+        var me = this,cont;
+        if(html){
+            if(!opt.pasteFilter){
+                return;
+            }
+            cont = me.document.createElement('div');
+            cont.innerHTML = html.html;
+        }else{
+            cont = me.document.body;
+        }
+        var nodes = domUtils.getElementsByTagName(cont,'*');
 
-                    var tagIndex = match.index;
-                    if ( tagIndex > nextIndex ) {
-                        var text = html.slice( nextIndex, tagIndex );
-                        if ( cdata ) {
-                            cdata.push( text );
-                        } else {
-                            callbacks.onText( text );
+          // 行首缩进，段落方向，段间距，段内间距
+        for(var i=0,ci;ci=nodes[i++];){
+
+            if(me.fireEvent('excludeNodeinautotype',ci) === true){
+                continue;
+            }
+             //font-size
+            if(opt.clearFontSize && ci.style.fontSize){
+                domUtils.removeStyle(ci,'font-size');
+
+                removeNotAttributeSpan(ci);
+
+            }
+            //font-family
+            if(opt.clearFontFamily && ci.style.fontFamily){
+                domUtils.removeStyle(ci,'font-family');
+                removeNotAttributeSpan(ci);
+            }
+
+            if(isLine(ci)){
+                //合并空行
+                if(opt.mergeEmptyline ){
+                    var next = ci.nextSibling,tmpNode,isBr = domUtils.isBr(ci);
+                    while(isLine(next)){
+                        tmpNode = next;
+                        next = tmpNode.nextSibling;
+                        if(isBr && (!next || next && !domUtils.isBr(next))){
+                            break;
                         }
+                        domUtils.remove(tmpNode);
                     }
-                    nextIndex = RE_PART.lastIndex;
-                    if ( (tagName = match[1]) ) {
-                        tagName = tagName.toLowerCase();
-                        if ( cdata && tagName == cdata._tag_name ) {
-                            callbacks.onCDATA( cdata.join( '' ) );
-                            cdata = null;
-                        }
-                        if ( !cdata ) {
-                            callbacks.onTagClose( tagName );
+
+                }
+                 //去掉空行，保留占位的空行
+                if(opt.removeEmptyline && domUtils.inDoc(ci,cont) && !remainTag[ci.parentNode.tagName.toLowerCase()] ){
+                    if(domUtils.isBr(ci)){
+                        next = ci.nextSibling;
+                        if(next && !domUtils.isBr(next)){
                             continue;
                         }
                     }
-                    if ( cdata ) {
-                        cdata.push( match[0] );
-                        continue;
-                    }
-                    if ( (tagName = match[3]) ) {
-                        if ( /="/.test( tagName ) ) {
-                            continue;
-                        }
-                        tagName = tagName.toLowerCase();
-                        var attrPart = match[4],
-                            attrMatch,
-                            attrMap = {},
-                            selfClosing = attrPart && attrPart.slice( -1 ) == '/';
-                        if ( attrPart ) {
-                            RE_ATTR.exec( "" );
-                            while ( (attrMatch = RE_ATTR.exec( attrPart )) ) {
-                                var attrName = attrMatch[1].toLowerCase(),
-                                    attrValue = attrMatch[2] || attrMatch[3] || attrMatch[4] || '';
-                                if ( !attrValue && EMPTY_ATTR[attrName] ) {
-                                    attrValue = attrName;
-                                }
-                                if ( attrName == 'style' ) {
-                                    if ( ie && version <= 6 ) {
-                                        attrValue = attrValue.replace( /(?!;)\s*([\w-]+):/g, function ( m, p1 ) {
-                                            return p1.toLowerCase() + ':';
-                                        } );
+                    domUtils.remove(ci);
+                    continue;
+
+                }
+
+            }
+            if(isLine(ci,true) && ci.tagName != 'SPAN'){
+                if(opt.indent){
+                    ci.style.textIndent = opt.indentValue;
+                }
+                if(opt.textAlign){
+                    ci.style.textAlign = opt.textAlign;
+                }
+//                if(opt.lineHeight)
+//                    ci.style.lineHeight = opt.lineHeight + 'cm';
+
+
+            }
+
+            //去掉class,保留的class不去掉
+            if(opt.removeClass && ci.className && !remainClass[ci.className.toLowerCase()]){
+
+                if(highlightCont && highlightCont.contains(ci)){
+                     continue;
+                }
+                domUtils.removeAttributes(ci,['class']);
+            }
+
+            //表情不处理
+            if(opt.imageBlockLine && ci.tagName.toLowerCase() == 'img' && !ci.getAttribute('emotion')){
+                if(html){
+                    var img = ci;
+                    switch (opt.imageBlockLine){
+                        case 'left':
+                        case 'right':
+                        case 'none':
+                            var pN = img.parentNode,tmpNode,pre,next;
+                            while(dtd.$inline[pN.tagName] || pN.tagName == 'A'){
+                                pN = pN.parentNode;
+                            }
+                            tmpNode = pN;
+                            if(tmpNode.tagName == 'P' && domUtils.getStyle(tmpNode,'text-align') == 'center'){
+                                if(!domUtils.isBody(tmpNode) && domUtils.getChildCount(tmpNode,function(node){return !domUtils.isBr(node) && !domUtils.isWhitespace(node)}) == 1){
+                                    pre = tmpNode.previousSibling;
+                                    next = tmpNode.nextSibling;
+                                    if(pre && next && pre.nodeType == 1 &&  next.nodeType == 1 && pre.tagName == next.tagName && domUtils.isBlockElm(pre)){
+                                        pre.appendChild(tmpNode.firstChild);
+                                        while(next.firstChild){
+                                            pre.appendChild(next.firstChild);
+                                        }
+                                        domUtils.remove(tmpNode);
+                                        domUtils.remove(next);
+                                    }else{
+                                        domUtils.setStyle(tmpNode,'text-align','');
                                     }
-                                }
-                                //没有值的属性不添加
-                                if ( attrValue ) {
-                                    attrMap[attrName] = attrValue.replace( /:\s*/g, ':' )
+
+
                                 }
 
+
                             }
-                        }
-                        callbacks.onTagOpen( tagName, attrMap, selfClosing );
-                        if ( !cdata && CDATA_TAG[tagName] ) {
-                            cdata = [];
-                            cdata._tag_name = tagName;
-                        }
-                        continue;
-                    }
-                    if ( (tagName = match[2]) ) {
-                        callbacks.onComment( tagName );
-                    }
-                }
-                if ( html.length > nextIndex ) {
-                    callbacks.onText( html.slice( nextIndex, html.length ) );
-                }
-            }
+                            domUtils.setStyle(img,'float',opt.imageBlockLine);
+                            break;
+                        case 'center':
+                            if(me.queryCommandValue('imagefloat') != 'center'){
+                                pN = img.parentNode;
+                                domUtils.setStyle(img,'float','none');
+                                tmpNode = img;
+                                while(pN && domUtils.getChildCount(pN,function(node){return !domUtils.isBr(node) && !domUtils.isWhitespace(node)}) == 1
+                                    && (dtd.$inline[pN.tagName] || pN.tagName == 'A')){
+                                    tmpNode = pN;
+                                    pN = pN.parentNode;
+                                }
+                                var pNode = me.document.createElement('p');
+                                domUtils.setAttributes(pNode,{
 
-            return function ( html, forceDtd ) {
+                                    style:'text-align:center'
+                                });
+                                tmpNode.parentNode.insertBefore(pNode,tmpNode);
+                                pNode.appendChild(tmpNode);
+                                domUtils.setStyle(tmpNode,'float','');
 
-                var fragment = {
-                    type: 'fragment',
-                    parent: null,
-                    children: []
-                };
-                var currentNode = fragment;
-
-                function addChild( node ) {
-                    node.parent = currentNode;
-                    currentNode.children.push( node );
-                }
-
-                function addElement( element, open ) {
-                    var node = element;
-                    // 遇到结构化标签的时候
-                    if ( NEED_PARENT_TAG[node.tag] ) {
-                        // 考虑这种情况的时候, 结束之前的标签
-                        // e.g. <table><tr><td>12312`<tr>`4566
-                        while ( NEED_PARENT_TAG[currentNode.tag] && NEED_PARENT_TAG[currentNode.tag][node.tag] ) {
-                            currentNode = currentNode.parent;
-                        }
-                        // 如果前一个标签和这个标签是同一级, 结束之前的标签
-                        // e.g. <ul><li>123<li>
-                        if ( currentNode.tag == node.tag ) {
-                            currentNode = currentNode.parent;
-                        }
-                        // 向上补齐父标签
-                        while ( NEED_PARENT_TAG[node.tag] ) {
-                            if ( NEED_PARENT_TAG[node.tag][currentNode.tag] ) break;
-                            node = node.parent = {
-                                type: 'element',
-                                tag: NEED_PARENT_TAG[node.tag]['$'],
-                                attributes: {},
-                                children: [node]
-                            };
-                        }
-                    }
-                    if ( forceDtd ) {
-                        // 如果遇到这个标签不能放在前一个标签内部，则结束前一个标签,span单独处理
-                        while ( dtd[node.tag] && !(currentNode.tag == 'span' ? utils.extend( dtd['strong'], {'a':1,'A':1} ) : (dtd[currentNode.tag] || dtd['div']))[node.tag] ) {
-                            if ( tagEnd( currentNode ) ) continue;
-                            if ( !currentNode.parent ) break;
-                            currentNode = currentNode.parent;
-                        }
-                    }
-                    node.parent = currentNode;
-                    currentNode.children.push( node );
-                    if ( open ) {
-                        currentNode = element;
-                    }
-                    if ( element.attributes.style ) {
-                        element.attributes.style = element.attributes.style.toLowerCase();
-                    }
-                    return element;
-                }
-
-                // 结束一个标签的时候，需要判断一下它是否缺少子标签
-                // e.g. <table></table>
-                function tagEnd( node ) {
-                    var needTag;
-                    if ( !node.children.length && (needTag = NEED_CHILD_TAG[node.tag]) ) {
-                        addElement( {
-                            type: 'element',
-                            tag: needTag,
-                            attributes: {},
-                            children: []
-                        }, true );
-                        return true;
-                    }
-                    return false;
-                }
-
-                parse( html, {
-                    onText: function ( text ) {
-
-                        while ( !(dtd[currentNode.tag] || dtd['div'])['#'] ) {
-                            //节点之间的空白不能当作节点处理
-//                                if(/^[ \t\r\n]+$/.test( text )){
-//                                    return;
-//                                }
-                            if ( tagEnd( currentNode ) ) continue;
-                            currentNode = currentNode.parent;
-                        }
-                        //if(/^[ \t\n\r]*/.test(text))
-                        addChild( {
-                            type: 'text',
-                            data: text
-                        } );
-
-                    },
-                    onComment: function ( text ) {
-                        addChild( {
-                            type: 'comment',
-                            data: text
-                        } );
-                    },
-                    onCDATA: function ( text ) {
-                        while ( !(dtd[currentNode.tag] || dtd['div'])['#'] ) {
-                            if ( tagEnd( currentNode ) ) continue;
-                            currentNode = currentNode.parent;
-                        }
-                        addChild( {
-                            type: 'cdata',
-                            data: text
-                        } );
-                    },
-                    onTagOpen: function ( tag, attrs, closed ) {
-                        closed = closed || EMPTY_TAG[tag] ;
-                        addElement( {
-                            type: 'element',
-                            tag: tag,
-                            attributes: attrs,
-                            closed: closed,
-                            children: []
-                        }, !closed );
-                    },
-                    onTagClose: function ( tag ) {
-                        var node = currentNode;
-                        // 向上找匹配的标签, 这里不考虑dtd的情况是因为tagOpen的时候已经处理过了, 这里不会遇到
-                        while ( node && tag != node.tag ) {
-                            node = node.parent;
-                        }
-                        if ( node ) {
-                            // 关闭中间的标签
-                            for ( var tnode = currentNode; tnode !== node.parent; tnode = tnode.parent ) {
-                                tagEnd( tnode );
-                            }
-                            //去掉空白的inline节点
-                            //分页，锚点保留
-                            //|| dtd.$removeEmptyBlock[node.tag])
-//                                if ( !node.children.length && dtd.$removeEmpty[node.tag] && !node.attributes.anchorname && node.attributes['class'] != 'pagebreak' && node.tag != 'a') {
-//
-//                                    node.parent.children.pop();
-//                                }
-                            currentNode = node.parent;
-                        } else {
-                            // 如果没有找到开始标签, 则创建新标签
-                            // eg. </div> => <div></div>
-                            //针对视屏网站embed会给结束符，这里特殊处理一下
-                            if ( !(dtd.$removeEmpty[tag] || dtd.$removeEmptyBlock[tag] || tag == 'embed') ) {
-                                node = {
-                                    type: 'element',
-                                    tag: tag,
-                                    attributes: {},
-                                    children: []
-                                };
-                                addElement( node, true );
-                                tagEnd( node );
-                                currentNode = node.parent;
                             }
 
 
-                        }
                     }
-                } );
-                // 处理这种情况, 只有开始标签没有结束标签的情况, 需要关闭开始标签
-                // eg. <table>
-                while ( currentNode !== fragment ) {
-                    tagEnd( currentNode );
-                    currentNode = currentNode.parent;
-                }
-                return fragment;
-            };
-        }();
-    var unhtml1 = function () {
-        var map = { '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-
-        function rep( m ) {
-            return map[m];
-        }
-
-        return function ( str ) {
-            str = str + '';
-            return str ? str.replace( /[<>"']/g, rep ) : '';
-        };
-    }();
-    var toHTML = function () {
-        function printChildren( node, pasteplain ) {
-            var children = node.children;
-
-            var buff = [];
-            for ( var i = 0,ci; ci = children[i]; i++ ) {
-
-                buff.push( toHTML( ci, pasteplain ) );
-            }
-            return buff.join( '' );
-        }
-
-        function printAttrs( attrs ) {
-            var buff = [];
-            for ( var k in attrs ) {
-                var value = attrs[k];
-
-                if(k == 'style'){
-
-                    //pt==>px
-                    value = ptToPx(value);
-                    //color rgb ==> hex
-                    if(/rgba?\s*\([^)]*\)/.test(value)){
-                        value = value.replace( /rgba?\s*\(([^)]*)\)/g, function( str ) {
-                            return utils.fixColor('color',str);
-                        } )
-                    }
-                    //过滤掉所有的white-space,在纯文本编辑器里粘贴过来的内容，到chrome中会带有span和white-space属性，导致出现不能折行的情况
-                    //所以在这里去掉这个属性
-                    attrs[k] = utils.optCss(value.replace(/windowtext/g,'#000'))
-                        .replace(/white-space[^;]+;/g,'');
-                    if(!attrs[k]){
-                        continue;
-                    }
-                }
-
-                buff.push( k + '="' + unhtml1( attrs[k] ) + '"' );
-            }
-            return buff.join( ' ' )
-        }
-
-        function printData( node, notTrans ) {
-            //trace:1399 输入html代码时空格转换成为&nbsp;
-            //node.data.replace(/&nbsp;/g,' ') 针对pre中的空格和出现的&nbsp;把他们在得到的html代码中都转换成为空格，为了在源码模式下显示为空格而不是&nbsp;
-            return notTrans ? node.data.replace(/&nbsp;/g,' ') : unhtml1( node.data ).replace(/ /g,'&nbsp;');
-        }
-
-        //纯文本模式下标签转换
-        var transHtml = {
-            'li':'p',
-            'h1':'p','h2':'p','h3':'p','h4':'p','h5':'p','h6':'p',
-            'tr':'p',
-            'br':'br',
-            'div':'p',
-            'p':'p'//trace:1398 碰到p标签自己要加上p,否则transHtml[tag]是undefined
-        };
-        var clearTagName ={
-            'table':1,
-            'tbody':1,
-            'ol':1,
-            'ul':1,
-            'dt':1
-        }
-        function printElement( node, pasteplain ) {
-            if ( node.type == 'element' && !node.children.length && (dtd.$removeEmpty[node.tag]) && node.tag != 'a' && utils.isEmptyObject(node.attributes) && autoClearEmptyNode) {// 锚点保留
-                return html;
-            }
-            var tag = node.tag;
-            if ( pasteplain && tag == 'td' ) {
-                if ( !html ) html = '';
-                html += printChildren( node, pasteplain ) + '&nbsp;&nbsp;&nbsp;';
-            } else {
-                var attrs = printAttrs( node.attributes );
-
-                var html = pasteplain && clearTagName[tag] ? '' :
-                    '<' + (pasteplain && transHtml[tag] !==undefined? transHtml[tag] : tag) + (attrs ? ' ' + attrs : '') + (EMPTY_TAG[tag] ? ' />' : '>');
-                if ( !EMPTY_TAG[tag] ) {
-                    //trace:1627 ,2070
-                    //p标签为空，将不占位这里占位符不起作用，用&nbsp;或者br
-                    if( tag == 'p' && !node.children.length){
-                        html += browser.ie ? '&nbsp;' : '<br/>';
-                    }
-                    html += printChildren( node, pasteplain );
-                    html +=(pasteplain && clearTagName[tag] ? '' : '</' + (pasteplain && transHtml[tag]!==undefined? transHtml[tag] : tag) + '>');
-                }
-            }
-
-            return html;
-        }
-
-        return function ( node, pasteplain ) {
-            if ( node.type == 'fragment' ) {
-                return printChildren( node, pasteplain );
-            } else if ( node.type == 'element' ) {
-                return printElement( node, pasteplain );
-            } else if ( node.type == 'text' || node.type == 'cdata' ) {
-                return printData( node, dtd.$notTransContent[node.parent.tag] );
-            } else if ( node.type == 'comment' ) {
-                return '<!--' + node.data + '-->';
-            }
-            return '';
-        };
-    }();
-
-    var NODE_NAME_MAP = {
-        'text': '#text',
-        'comment': '#comment',
-        'cdata': '#cdata-section',
-        'fragment': '#document-fragment'
-    };
-
-
-    //写入编辑器时，调用，进行转换操作
-    function transNode( node, word_img_flag ) {
-
-        var sizeMap = [0, 10, 12, 16, 18, 24, 32, 48],
-            attr,
-            indexOf = utils.indexOf;
-        switch ( node.tag ) {
-            case 'script':
-                node.tag = 'div';
-                node.attributes._ue_org_tagName = 'script';
-                node.attributes._ue_div_script = 1;
-                node.attributes._ue_script_data = node.children[0] ? encodeURIComponent(node.children[0].data)  : '';
-                node.attributes._ue_custom_node_ = 1;
-                node.children = [];
-                break;
-            case 'style':
-                node.tag = 'div';
-                node.attributes._ue_div_style = 1;
-                node.attributes._ue_org_tagName = 'style';
-                node.attributes._ue_style_data = node.children[0] ? encodeURIComponent(node.children[0].data)  : '';
-                node.attributes._ue_custom_node_ = 1;
-                node.children = [];
-                break;
-            case 'img':
-                //todo base64暂时去掉，后边做远程图片上传后，干掉这个
-                if(node.attributes.src && /^data:/.test(node.attributes.src)){
-                    return {
-                        type : 'fragment',
-                        children:[]
-                    }
-                }
-                if ( node.attributes.src && /^(?:file)/.test( node.attributes.src ) ) {
-                    if ( !/(gif|bmp|png|jpg|jpeg)$/.test( node.attributes.src ) ) {
-                        return {
-                            type : 'fragment',
-                            children:[]
-                        }
-                    }
-                    node.attributes.word_img = node.attributes.src;
-                    node.attributes.src = me.options.UEDITOR_HOME_URL + 'themes/default/images/spacer.gif';
-                    var flag = parseInt(node.attributes.width)<128||parseInt(node.attributes.height)<43;
-                    node.attributes.style="background:url(" + (flag? me.options.themePath+me.options.theme +"/images/word.gif":me.options.langPath+me.options.lang + "/images/localimage.png")+") no-repeat center center;border:1px solid #ddd";
-                    //node.attributes.style = 'width:395px;height:173px;';
-                    word_img_flag && (word_img_flag.flag = 1);
-                }
-                if(browser.ie && browser.version < 7 )
-                    node.attributes.orgSrc = node.attributes.src;
-                node.attributes.data_ue_src = node.attributes.data_ue_src || node.attributes.src;
-                break;
-            case 'li':
-                var child = node.children[0];
-
-                if ( !child || child.type != 'element' || child.tag != 'p' && dtd.p[child.tag] ) {
-                    var tmpPNode = {
-                        type: 'element',
-                        tag: 'p',
-                        attributes: {},
-
-                        parent : node
-                    };
-                    tmpPNode.children = child ? node.children :[
-                        browser.ie ? {
-                            type:'text',
-                            data:domUtils.fillChar,
-                            parent : tmpPNode
-
-                        }:
-                        {
-                            type : 'element',
-                            tag : 'br',
-                            attributes:{},
-                            closed: true,
-                            children: [],
-                            parent : tmpPNode
-                        }
-                    ];
-                    node.children =   [tmpPNode];
-                }
-                break;
-            case 'table':
-            case 'td':
-                optStyle( node );
-                break;
-            case 'a'://锚点，a==>img
-                if ( node.attributes['anchorname'] ) {
-                    node.tag = 'img';
-                    node.attributes = {
-                        'class' : 'anchorclass',
-                        'anchorname':node.attributes['name']
-                    };
-                    node.closed = 1;
-                }
-                node.attributes.href && (node.attributes.data_ue_src = node.attributes.href);
-                break;
-            case 'b':
-                node.tag = node.name = 'strong';
-                break;
-            case 'i':
-                node.tag = node.name = 'em';
-                break;
-            case 'u':
-                node.tag = node.name = 'span';
-                node.attributes.style = (node.attributes.style || '') + ';text-decoration:underline;';
-                break;
-            case 's':
-            case 'del':
-                node.tag = node.name = 'span';
-                node.attributes.style = (node.attributes.style || '') + ';text-decoration:line-through;';
-                if ( node.children.length == 1 ) {
-                    child = node.children[0];
-                    if ( child.tag == node.tag ) {
-                        node.attributes.style += ";" + child.attributes.style;
-                        node.children = child.children;
-
-                    }
-                }
-                break;
-            case 'span':
-
-                var style = node.attributes.style;
-                if ( style ) {
-                    if ( !node.attributes.style  || browser.webkit && style == "white-space:nowrap;") {
-                        delete node.attributes.style;
-                    }
-                }
-
-                //针对ff3.6span的样式不能正确继承的修复
-
-                if(browser.gecko && browser.version <= 10902 && node.parent){
-                    var parent = node.parent;
-                    if(parent.tag == 'span' && parent.attributes && parent.attributes.style){
-                        node.attributes.style = parent.attributes.style + ';' + node.attributes.style;
-                    }
-                }
-                if ( utils.isEmptyObject( node.attributes ) && autoClearEmptyNode) {
-                    node.type = 'fragment'
-                }
-                break;
-            case 'font':
-                node.tag = node.name = 'span';
-                attr = node.attributes;
-                node.attributes = {
-                    'style': (attr.size ? 'font-size:' + (sizeMap[attr.size] || 12) + 'px' : '')
-                        + ';' + (attr.color ? 'color:'+ attr.color : '')
-                        + ';' + (attr.face ? 'font-family:'+ attr.face : '')
-                        + ';' + (attr.style||'')
-                };
-
-                while(node.parent.tag == node.tag && node.parent.children.length == 1){
-                    node.attributes.style && (node.parent.attributes.style ? (node.parent.attributes.style += ";" + node.attributes.style) : (node.parent.attributes.style = node.attributes.style));
-                    node.parent.children = node.children;
-                    node = node.parent;
-
-                }
-                break;
-            case 'p':
-                if ( node.attributes.align ) {
-                    node.attributes.style = (node.attributes.style || '') + ';text-align:' +
-                        node.attributes.align + ';';
-                    delete node.attributes.align;
-                }
-
-        }
-        return node;
-    }
-
-    function optStyle( node ) {
-        if ( ie && node.attributes.style ) {
-            var style = node.attributes.style;
-            node.attributes.style = style.replace(/;\s*/g,';');
-            node.attributes.style = node.attributes.style.replace( /^\s*|\s*$/, '' )
-        }
-    }
-    //getContent调用转换
-    function transOutNode( node ) {
-
-        switch ( node.tag ) {
-            case 'div' :
-                if(node.attributes._ue_div_script){
-                    node.tag = 'script';
-                    node.children = [{type:'cdata',data:node.attributes._ue_script_data?decodeURIComponent(node.attributes._ue_script_data):'',parent:node}];
-                    delete node.attributes._ue_div_script;
-                    delete node.attributes._ue_script_data;
-                    delete node.attributes._ue_custom_node_;
-                    delete node.attributes._ue_org_tagName;
-
-                }
-                if(node.attributes._ue_div_style){
-                    node.tag = 'style';
-                    node.children = [{type:'cdata',data:node.attributes._ue_style_data?decodeURIComponent(node.attributes._ue_style_data):'',parent:node}];
-                    delete node.attributes._ue_div_style;
-                    delete node.attributes._ue_style_data;
-                    delete node.attributes._ue_custom_node_;
-                    delete node.attributes._ue_org_tagName;
-
-                }
-                break;
-            case 'table':
-                !node.attributes.style && delete node.attributes.style;
-                if ( ie && node.attributes.style ) {
-
-                    optStyle( node );
-                }
-                break;
-            case 'td':
-            case 'th':
-                if ( /display\s*:\s*none/i.test( node.attributes.style ) ) {
-                    return {
-                        type: 'fragment',
-                        children: []
-                    };
-                }
-                if ( ie && !node.children.length ) {
-                    var txtNode = {
-                        type: 'text',
-                        data:domUtils.fillChar,
-                        parent : node
-                    };
-                    node.children[0] = txtNode;
-                }
-                if ( ie && node.attributes.style ) {
-                    optStyle( node );
-                }
-                break;
-            case 'img'://锚点，img==>a
-                if ( node.attributes.anchorname ) {
-                    node.tag = 'a';
-                    node.attributes = {
-                        name : node.attributes.anchorname,
-                        anchorname : 1
-                    };
-                    node.closed = null;
                 }else{
-                    if(node.attributes.data_ue_src){
-                        node.attributes.src = node.attributes.data_ue_src;
-                        delete node.attributes.data_ue_src;
-                    }
+                    var range = me.selection.getRange();
+                    range.selectNode(ci).select();
+                    me.execCommand('imagefloat',opt.imageBlockLine);
                 }
-                break;
 
-            case 'a':
-                if(node.attributes.data_ue_src){
-                    node.attributes.href = node.attributes.data_ue_src;
-                    delete node.attributes.data_ue_src;
+
+
+            }
+
+            //去掉冗余的标签
+            if(opt.removeEmptyNode){
+                if(opt.removeTagNames[ci.tagName.toLowerCase()] && domUtils.hasNoAttributes(ci) && domUtils.isEmptyBlock(ci)){
+                    domUtils.remove(ci);
                 }
-        }
-
-        return node;
-    }
-
-    function childrenAccept( node, visit, ctx ) {
-
-        if ( !node.children || !node.children.length ) {
-            return node;
-        }
-        var children = node.children;
-        for ( var i = 0; i < children.length; i++ ) {
-            var newNode = visit( children[i], ctx );
-            if ( newNode.type == 'fragment' ) {
-                var args = [i, 1];
-                args.push.apply( args, newNode.children );
-                children.splice.apply( children, args );
-                //节点为空的就干掉，不然后边的补全操作会添加多余的节点
-                if ( !children.length ) {
-                    node = {
-                        type: 'fragment',
-                        children: []
-                    }
-                }
-                i --;
-            } else {
-                children[i] = newNode;
             }
         }
-        return node;
+        if(html){
+            html.html = cont.innerHTML;
+        }
+    }
+    if(opt.pasteFilter){
+        me.addListener('beforepaste',autotype);
     }
 
-    function Serialize( rules ) {
-        this.rules = rules;
-    }
-
-
-    Serialize.prototype = {
-        // NOTE: selector目前只支持tagName
-        rules: null,
-        // NOTE: node必须是fragment
-        filter: function ( node, rules, modify ) {
-            rules = rules || this.rules;
-            var whiteList = rules && rules.whiteList;
-            var blackList = rules && rules.blackList;
-
-            function visitNode( node, parent ) {
-                node.name = node.type == 'element' ?
-                    node.tag : NODE_NAME_MAP[node.type];
-                if ( parent == null ) {
-                    return childrenAccept( node, visitNode, node );
-                }
-
-                if ( blackList && (blackList[node.name]|| (node.attributes && node.attributes._ue_org_tagName && blackList[node.attributes._ue_org_tagName]))) {
-                    modify && (modify.flag = 1);
-                    return {
-                        type: 'fragment',
-                        children: []
-                    };
-                }
-                if ( whiteList ) {
-                    if ( node.type == 'element' ) {
-                        if ( parent.type == 'fragment' ? whiteList[node.name] : whiteList[node.name] && whiteList[parent.name][node.name] ) {
-
-                            var props;
-                            if ( (props = whiteList[node.name].$) ) {
-                                var oldAttrs = node.attributes;
-                                var newAttrs = {};
-                                for ( var k in props ) {
-                                    if ( oldAttrs[k] ) {
-                                        newAttrs[k] = oldAttrs[k];
-                                    }
-                                }
-                                node.attributes = newAttrs;
-                            }
-
-
-                        } else {
-                            modify && (modify.flag = 1);
-                            node.type = 'fragment';
-                            // NOTE: 这里算是一个hack
-                            node.name = parent.name;
-                        }
-                    } else {
-                        // NOTE: 文本默认允许
-                    }
-                }
-                if ( blackList || whiteList ) {
-                    childrenAccept( node, visitNode, node );
-                }
-                return node;
+    me.commands['autotypeset'] = {
+        execCommand:function () {
+            me.removeListener('beforepaste',autotype);
+            if(opt.pasteFilter){
+                me.addListener('beforepaste',autotype);
             }
+            autotype.call(me)
+        }
 
-            return visitNode( node, null );
-        },
-        transformInput: function ( node, word_img_flag ) {
-
-            function visitNode( node ) {
-                node = transNode( node, word_img_flag );
-
-                node = childrenAccept( node, visitNode, node );
-
-                if ( me.options.pageBreakTag && node.type == 'text' && node.data.replace( /\s/g, '' ) == me.options.pageBreakTag ) {
-
-                    node.type = 'element';
-                    node.name = node.tag = 'hr';
-
-                    delete node.data;
-                    node.attributes = {
-                        'class' : 'pagebreak',
-                        noshade:"noshade",
-                        size:"5",
-                        'unselectable' : 'on',
-                        'style' : 'moz-user-select:none;-khtml-user-select: none;'
-                    };
-
-                    node.children = [];
-
-                }
-                //去掉多余的空格和换行
-                if(node.type == 'text' && !dtd.$notTransContent[node.parent.tag]){
-                    node.data = node.data.replace(/[\r\t\n]*/g,'')//.replace(/[ ]*$/g,'')
-                }
-                return node;
-            }
-
-            return visitNode( node );
-        },
-        transformOutput: function ( node ) {
-            function visitNode( node ) {
-
-                if ( node.tag == 'hr' && node.attributes['class'] == 'pagebreak' ) {
-                    delete node.tag;
-                    node.type = 'text';
-                    node.data = me.options.pageBreakTag;
-                    delete node.children;
-
-                }
-                node = transOutNode( node );
-                node = childrenAccept( node, visitNode, node );
-                return node;
-            }
-
-            return visitNode( node );
-        },
-        toHTML: toHTML,
-        parseHTML: parseHTML,
-        word: UE.filterWord
     };
-    me.serialize = new Serialize( me.options.serialize || {});
-    UE.serialize = new Serialize( {} );
+
 };
+
 ///import core
 ///commands 自定义样式
 ///commandsName  CustomStyle

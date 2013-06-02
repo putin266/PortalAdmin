@@ -5,9 +5,9 @@
 <%@ page import="javax.servlet.http.HttpServletRequest"%>
 <% 
     //仅做示例用，请自行修改
-	String path = "upload";
+	String path = "\\upload";
 	String imgStr ="";
-	String realpath = getRealPath(request,path)+"/"+path;
+	String realpath = getRealPath(request,path)+"/";
 	List<File> files = getFiles(realpath,new ArrayList());
 	for(File file :files ){
 		imgStr+=file.getPath().replace(getRealPath(request,path),"")+"ue_separate_ue";
@@ -39,7 +39,7 @@ public List getFiles(String realpath, List files) {
 public String getRealPath(HttpServletRequest request,String path){
 	ServletContext application = request.getSession().getServletContext();
 	String str = application.getRealPath(request.getServletPath());
-	return new File(str).getParent();
+	return new File(new File(str).getParent()).getParent() + path;
 }
 
 public String getFileType(String fileName){
@@ -47,7 +47,7 @@ public String getFileType(String fileName){
 	Iterator<String> type = Arrays.asList(fileType).iterator();
 	while(type.hasNext()){
 		String t = type.next();
-		if(fileName.endsWith(t)){
+		if(fileName.toLowerCase().endsWith(t)){
 			return t;
 		}
 	}

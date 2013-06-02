@@ -72,4 +72,5 @@
 
 	</package>
 	<constant name="struts.multipart.maxSize" value="314572800"></constant>
+	<constant name="struts.multipart.saveDir" value="/tmp"></constant>
 </struts>    

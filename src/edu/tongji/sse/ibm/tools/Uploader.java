@@ -1,4 +1,4 @@
-package ueditor;
+package edu.tongji.sse.ibm.tools;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -15,19 +15,19 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import sun.misc.BASE64Decoder;
 import javax.servlet.http.HttpServletRequest;
 /**
- * UEditor文件上传辅助类
+ * UEditor文件上传辅助�?
  *
  */
 public class Uploader {
 	// 输出文件地址
 	private String url = "";
-	// 上传文件名
+	// 上传文件�?
 	private String fileName = "";
-	// 状态
+	// 状�?
 	private String state = "";
 	// 文件类型
 	private String type = "";
-	// 原始文件名
+	// 原始文件�?
 	private String originalName = "";
 	// 文件大小
 	private String size = "";
@@ -89,7 +89,7 @@ public class Uploader {
 					BufferedOutputStream output = new BufferedOutputStream(out);
 					Streams.copy(in, output, true);
 					this.state=this.errorInfo.get("SUCCESS");
-					//UE中只会处理单张上传，完成后即退出
+					//UE中只会处理单张上传，完成后即�?��
 					break;
 				} else {
 					String fname = fis.getFieldName();
@@ -120,7 +120,7 @@ public class Uploader {
 	}
 	
 	/**
-	 * 接受并保存以base64格式上传的文件
+	 * 接受并保存以base64格式上传的文�?
 	 * @param fieldName
 	 */
 	public void uploadBase64(String fieldName){
@@ -165,7 +165,7 @@ public class Uploader {
 	}
 
 	/**
-	 * 获取文件扩展名
+	 * 获取文件扩展�?
 	 * 
 	 * @return string
 	 */
@@ -174,7 +174,7 @@ public class Uploader {
 	}
 
 	/**
-	 * 依据原始文件名生成新文件名
+	 * 依据原始文件名生成新文件�?
 	 * @return
 	 */
 	private String getName(String fileName) {
@@ -184,7 +184,7 @@ public class Uploader {
 	}
 
 	/**
-	 * 根据字符串创建本地目录 并按照日期建立子目录返回
+	 * 根据字符串创建本地目�?并按照日期建立子目录返回
 	 * @param path 
 	 * @return 
 	 */
@@ -204,7 +204,7 @@ public class Uploader {
 	}
 
 	/**
-	 * 根据传入的虚拟路径获取物理路径
+	 * 根据传入的虚拟路径获取物理路�?
 	 * 
 	 * @param path
 	 * @return
