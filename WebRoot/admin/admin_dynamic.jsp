@@ -43,12 +43,10 @@
 					}
 				%>
 				<li class="nav-header">动态网页管理</li>
-				<li><a href="newslist?sort=cdug">cdug新闻</a>
-				</li>
-				<li><a href="newslist?sort=club">俱乐部新闻</a>
-				</li>
-				<li><a href="newslist?sort=stu">学生竞赛</a>
-				</li>
+				<li><a href="newslist?sort=portal">主页焦点新闻</a></li>
+				<li><a href="newslist?sort=activity">主页活动公告</a></li>
+				<li><a href="newslist?sort=cdug">cdug新闻</a></li>
+				<li><a href="newslist?sort=club">俱乐部新闻</a></li>
 			</ul>
 		</div>
 	</div>
