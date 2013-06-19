@@ -9,6 +9,7 @@ public class CDUG_res {
 	private String URL;
 	private Date uploadDate;
 	private User creater;
+	private Integer year;
 	private CDUG_resSort sort;
 
 	public Integer getId() {
@@ -64,5 +65,13 @@ public class CDUG_res {
 
 	public void setSort(CDUG_resSort sort) {
 		this.sort = sort;
+	}
+
+	public Integer getYear() {
+		return year;
+	}
+
+	public void setYear(Integer year) {
+		this.year = year;
 	}
 }

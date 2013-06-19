@@ -11,6 +11,9 @@
 		<property name="name" type="java.lang.String">
 			<column name="name"></column>
 		</property>
+		<property name="year" type="java.lang.Integer">
+			<column name="year"></column>
+		</property>
 		<property name="profile" type="java.lang.String">
 			<column name="profile"></column>
 		</property>
