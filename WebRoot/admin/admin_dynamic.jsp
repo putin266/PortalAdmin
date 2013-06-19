@@ -32,6 +32,7 @@
 				<li class="nav-header">静态网页管理</li>
 				<%
 					List<ProfileSort> sortlist =(List<ProfileSort>) request.getAttribute("sortlist");
+					String sortname = (String) request.getAttribute("sort");
 					ProfileSort sort = new ProfileSort();
 					Iterator<ProfileSort> it = sortlist.iterator();
 					while(it.hasNext()){
@@ -41,12 +42,43 @@
 				</li>
 				<%
 					}
+					
+					if(sortname.equals("club")){
 				%>
 				<li class="nav-header">动态网页管理</li>
 				<li><a href="newslist?sort=portal">主页焦点新闻</a></li>
 				<li><a href="newslist?sort=activity">主页活动公告</a></li>
 				<li><a href="newslist?sort=cdug">cdug新闻</a></li>
+				<li class="active"><a href="newslist?sort=club">俱乐部新闻</a></li>
+				<%
+				}else if(sortname.equals("portal")){
+				 %>
+				 <li class="nav-header">动态网页管理</li>
+				<li class="active"><a href="newslist?sort=portal">主页焦点新闻</a></li>
+				<li><a href="newslist?sort=activity">主页活动公告</a></li>
+				<li><a href="newslist?sort=cdug">cdug新闻</a></li>
 				<li><a href="newslist?sort=club">俱乐部新闻</a></li>
+				 <%
+				}else if(sortname.equals("activity")){
+				 %>
+				 <li class="nav-header">动态网页管理</li>
+				<li><a href="newslist?sort=portal">主页焦点新闻</a></li>
+				<li class="active"><a href="newslist?sort=activity">主页活动公告</a></li>
+				<li><a href="newslist?sort=cdug">cdug新闻</a></li>
+				<li><a href="newslist?sort=club">俱乐部新闻</a></li>
+				 <%
+				}else if(sortname.equals("cdug")){
+				 %>
+				 <li class="nav-header">动态网页管理</li>
+				<li><a href="newslist?sort=portal">主页焦点新闻</a></li>
+				<li><a href="newslist?sort=activity">主页活动公告</a></li>
+				<li class="active"><a href="newslist?sort=cdug">cdug新闻</a></li>
+				<li><a href="newslist?sort=club">俱乐部新闻</a></li>
+				 <%
+				}
+				 %>
+				<li class="nav-header">CDUG管理</li>
+				<li><a href="signupmanage">报名管理</a></li>
 			</ul>
 		</div>
 	</div>

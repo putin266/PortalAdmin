@@ -4,10 +4,12 @@
 
 	<package name="service" extends="struts-default">
 		<action name="login" class="edu.tongji.sse.ibm.action.LoginAction">
-			<result name="success" type="dispatcher">
-				/admin/admin_dynamic.jsp
+			<result name="success" type="redirectAction">
+				newslist
 			</result>
-			<result name="error" type="dispatcher">/index.jsp</result>
+			<result name="error" type="dispatcher">
+				/admin/admin_login.jsp
+			</result>
 		</action>
 		<action name="saveProfile" class="edu.tongji.sse.ibm.action.SaveProfile">
 			<result name="success" type="dispatcher">/index.jsp</result>

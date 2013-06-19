@@ -1,3 +1,4 @@
+<%@page import="edu.tongji.sse.ibm.pojo.ProfileSort"%>
 <%@page import="edu.tongji.sse.ibm.pojo.CDUG_signUpForm"%>
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
 <%
@@ -28,13 +29,26 @@
     <div class="span3">
       <div class="well sidebar-nav">
         <ul class="nav nav-list">
-          <li class="nav-header">静态网页管理</li>
-          <li class="active"><a href="#">条目1</a></li>
-          <li><a href="#">条目2</a></li>
-          <li><a href="#">条目3</a></li>
-          <li class="nav-header">动态网页管理</li>
-          <li><a href="#">条目1</a></li>
-          <li><a href="#">条目2</a></li>
+				<li class="nav-header">静态网页管理</li>
+				<%
+					List<ProfileSort> sortlist =(List<ProfileSort>) request.getAttribute("sortlist");
+					ProfileSort sort = new ProfileSort();
+					Iterator<ProfileSort> it = sortlist.iterator();
+					while(it.hasNext()){
+					sort = it.next();
+				%>
+				<li><a href="profile?sortname=<%=sort.getSortname()%>"><%=sort.getName()%></a>
+				</li>
+				<%
+					}
+				%>
+				<li class="nav-header">动态网页管理</li>
+				<li><a href="newslist?sort=portal">主页焦点新闻</a></li>
+				<li><a href="newslist?sort=activity">主页活动公告</a></li>
+				<li><a href="newslist?sort=cdug">cdug新闻</a></li>
+				<li><a href="newslist?sort=club">俱乐部新闻</a></li>
+				<li class="nav-header">CDUG管理</li>
+				<li class="active"><a href="signupmanage">报名管理</a></li>
         </ul>
       </div>
     </div>
@@ -83,9 +97,9 @@
             	List<CDUG_signUpForm> formlist = (List<CDUG_signUpForm>) request.getAttribute("formlist");
             	if(formlist != null){
             	CDUG_signUpForm form = new CDUG_signUpForm();
-            	Iterator<CDUG_signUpForm> it = formlist.iterator();
+            	Iterator<CDUG_signUpForm> itf = formlist.iterator();
             	while(it.hasNext()){
-            	form = it.next();
+            	form = itf.next();
              %>
              <tr>
               <th><%=form.getId() %></th>

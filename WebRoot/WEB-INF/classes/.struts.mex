@@ -1,70 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Struts2Diagram version="2.0">
-  <package name="service" location="476,35" size="276,612">
-    <action name="login" location="97,84" size="150,62">
-      <result name="success">
-        <resourceEdge source="success" routing="0" target="admin_dynamic.jsp" />
-      </result>
+  <package name="service" location="476,35" size="287,596">
+    <action name="login" location="110,97" size="150,62">
+      <result name="success" />
       <result name="error">
-        <resourceEdge source="error" routing="0" target="index.jsp" />
+        <resourceEdge source="error" routing="0" target="admin_login.jsp" />
       </result>
     </action>
-    <action name="saveProfile" location="98,179" size="141,41">
+    <action name="saveProfile" location="111,192" size="141,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="index.jsp" />
       </result>
     </action>
-    <action name="deleteFile" location="102,248" size="130,41">
+    <action name="deleteFile" location="115,261" size="130,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="editNews" namespace="" />
       </result>
     </action>
-    <action name="saveNews" location="106,312" size="127,41">
+    <action name="saveNews" location="119,325" size="127,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="newslist" namespace="" />
       </result>
     </action>
-    <action name="deleteNews" location="101,377" size="166,41">
+    <action name="deleteNews" location="114,390" size="166,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="newslist" namespace="" />
       </result>
     </action>
-    <action name="publishNews" location="102,430" size="151,41">
+    <action name="publishNews" location="115,443" size="151,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="newslist" namespace="" />
       </result>
     </action>
-    <action name="viewform" location="109,488" size="150,41">
+    <action name="viewform" location="122,501" size="150,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="admin_signup_man.jsp" />
       </result>
     </action>
-    <action name="toexcle" location="116,536" size="150,41">
+    <action name="toexcle" location="129,549" size="150,41">
       <result name="success" />
     </action>
   </package>
   <package name="pages" location="20,35" size="253,489">
-    <action name="profile" location="93,100" size="118,41">
+    <action name="profile" location="106,113" size="118,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="admin_static.jsp" />
       </result>
     </action>
-    <action name="newslist" location="96,178" size="110,41">
+    <action name="newslist" location="109,191" size="110,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="admin_dynamic.jsp" />
       </result>
     </action>
-    <action name="editNews" location="99,247" size="106,41">
+    <action name="editNews" location="112,260" size="106,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="admin_item_edit.jsp" />
       </result>
     </action>
-    <action name="publishPage" location="94,306" size="100,41">
+    <action name="publishPage" location="107,319" size="100,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="admin_publish_news.jsp" />
       </result>
     </action>
-    <action name="signupmanage" location="45,365" size="150,41">
+    <action name="signupmanage" location="58,378" size="150,41">
       <result name="success">
         <resourceEdge source="success" routing="0" target="admin_signup_man.jsp" />
       </result>
@@ -76,5 +74,6 @@
   <webResource name="admin_item_edit.jsp" path="/admin/admin_item_edit.jsp" location="50,650" size="150,55" />
   <webResource name="admin_publish_news.jsp" path="/admin/admin_publish_news.jsp" location="50,800" size="150,55" />
   <webResource name="admin_signup_man.jsp" path="/admin/admin_signup_man.jsp" location="350,800" size="150,55" />
+  <webResource name="admin_login.jsp" path="/admin/admin_login.jsp" location="50,950" size="150,55" />
 </Struts2Diagram>
 

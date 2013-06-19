@@ -47,6 +47,8 @@
 				<li><a href="newslist?sort=activity">主页活动公告</a></li>
 				<li><a href="newslist?sort=cdug">cdug新闻</a></li>
 				<li><a href="newslist?sort=club">俱乐部新闻</a></li>
+				<li class="nav-header">CDUG管理</li>
+				<li><a href="signupmanage">报名管理</a></li>
 			</ul>
 		</div>
 	</div>
