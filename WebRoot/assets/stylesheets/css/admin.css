@@ -71,3 +71,8 @@
 #source{
     min-height: 500px;
 }
+
+.admin-container {
+	width: 1300px;
+	margin: 0 auto;
+}

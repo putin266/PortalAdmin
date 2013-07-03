@@ -22,6 +22,7 @@
 </head>
 
 <body>
+	<div class="admin-container">
 	<div class="admin-header">
 		<h1>同济大学IBM技术中心后台管理</h1>
 	</div>
@@ -72,6 +73,7 @@
 		</div>
 		<button type="submit" class="btn btn-primary">发布</button>
 		</form>
+	</div>
 	</div>
 
 	<!-- scripts -->

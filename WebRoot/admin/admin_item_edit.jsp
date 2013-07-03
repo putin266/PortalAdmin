@@ -23,6 +23,7 @@
 </head>
 
 <body>
+	<div class="admin-container">
 	<div class="admin-header">
 		<h1>同济大学IBM技术中心后台管理</h1>
 	</div>
@@ -81,6 +82,7 @@
 		<button type="submit" class="btn btn-primary">保存</button>
 		<button class="btn btn-primary">重置</button>
 		</form>
+	</div>
 	</div>
 
 	<!-- scripts -->

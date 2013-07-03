@@ -23,6 +23,7 @@
 </head>
 
 <body>
+	<div class="admin-container">
 	<div class="admin-header">
 		<h1>同济大学IBM技术中心后台管理</h1>
 	</div>
@@ -101,6 +102,7 @@
 				<a class="btn btn-mini btn-primary pull-right" href="editNews?id=<%=news.getId()%>">编辑</a></li>
 				<%} %>
 		</ul>
+	</div>
 	</div>
 
 	<!-- scripts -->

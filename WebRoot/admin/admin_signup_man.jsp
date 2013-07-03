@@ -23,6 +23,7 @@
   </head>
   
   <body>
+	<div class="admin-container">
     <div class="admin-header">
        <h1>同济大学IBM技术中心后台管理</h1>
     </div>
@@ -67,13 +68,7 @@
         </div>
         <div class="span2" style="padding-top: 20px;">
          <!--  <a class="btn btn-success" href="" >查看报名名单</a>-->
-          <button class="btn btn-success" type="submit">查看报名名单</button>
-        </div>
-        <div class="span2" style="padding-top: 20px;">
-          <a class="btn btn-success" href="#">生成电子表格</a>
-        </div>
-        <div class="span2" style="padding-top: 20px;">
-          <a class="btn btn-success" href="">下载电子表格</a>
+          <button class="btn btn-success" type="submit">下载报名表格</button>
         </div>
         </form>
       </div>
@@ -118,6 +113,7 @@
           </tbody>
         </table>
       </div>
+    </div>
     </div>
 
     <!-- scripts -->
